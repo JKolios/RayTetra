@@ -306,14 +306,15 @@ initializeCL(void)
 		&status);
 	if(status != CL_SUCCESS) exitOnError("clCreateBuffer");
 	
-	//Kernel Loading/Compilation
-
-	
-	
-
-	char binFileName[30];
-	sprintf(binFileName,"%s.elf.%d",kernelName,deviceNum);
+	//Kernel Loading/Compilation	
+	char binFileName[255];
+	char deviceName[255];
+	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_NAME,255,deviceName,NULL);
+	if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number");
+	printf("Using Device:%s\n",deviceName);
+	sprintf(binFileName,"%s_%s.elf",kernelName,deviceName);
 	std::fstream inBinFile(binFileName, (ios::in|ios::binary|ios::ate));
+	
 	if(inBinFile.fail()) {
 	inBinFile.close();	
 	  printf("No binary image found for specified kernel and device,compiling a new one.\n");
@@ -335,12 +336,13 @@ initializeCL(void)
 		status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
 		if(status != CL_SUCCESS) exitOnError("Building program(clBuildProgram)");
 
+		//Export Binary Images to file
 		dumpBinary(program);
 	  
 	}else{
 	
-	  printf("Binary image found:%s.\n",binFileName);	    
-	 size_t  *binSize = (size_t*)malloc(sizeof(size_t));	  
+	  printf("Binary image found:%s\n",binFileName);	    
+	  size_t  *binSize = (size_t*)malloc(sizeof(size_t));	  
 	  char* bin;  
 	  *binSize = inBinFile.tellg();
 	  inBinFile.seekg (0, ios::beg);
@@ -497,25 +499,28 @@ void runCLKernels(void)
 void dumpBinary(cl_program program)
 {
  	//Extract binary file
-	cl_uint deviceNum = 0;
-	status = clGetProgramInfo(program,CL_PROGRAM_NUM_DEVICES,sizeof(cl_uint),&deviceNum,NULL);
+	cl_uint deviceCount = 0;
+	status = clGetProgramInfo(program,CL_PROGRAM_NUM_DEVICES,sizeof(cl_uint),&deviceCount,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting number of devices for the program(clGetProgramInfo)");
 
-	size_t *binSize = (size_t*)malloc(sizeof(size_t)*deviceNum);
+	size_t *binSize = (size_t*)malloc(sizeof(size_t)*deviceCount);
 	status = clGetProgramInfo(program,CL_PROGRAM_BINARY_SIZES,sizeof(binSize),binSize,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting binary sizes for the program(clGetProgramInfo)");
 
-	char **bin = ( char**)malloc(sizeof(char*)*deviceNum);
-	for(cl_uint i = 0;i<deviceNum;i++) bin[i] = (char*)malloc(binSize[i]);
+	char **bin = ( char**)malloc(sizeof(char*)*deviceCount);
+	for(cl_uint i = 0;i<deviceCount;i++) bin[i] = (char*)malloc(binSize[i]);
 
 	status = clGetProgramInfo(program,CL_PROGRAM_BINARIES,sizeof(binSize),bin,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting program binaries(clGetProgramInfo)");
 
-	char binFileName[30];
-	for(cl_uint i = 0;i<deviceNum;i++)
+	char binFileName[255];
+	for(cl_uint i = 0;i<deviceCount;i++)
 	{
-	  sprintf(binFileName,"%s.elf.%d",kernelName,i);
-	  printf("Exporting Binary for device %d:%s\n",i,binFileName);
+	  char deviceName[255];
+	  status = clGetDeviceInfo(devices[i],CL_DEVICE_NAME,255,deviceName,NULL);
+	  if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number");
+	  printf("Exporting Kernel for Device:%s\n",deviceName);
+	  sprintf(binFileName,"%s_%s.elf",kernelName,deviceName);
 	  std::fstream outBinFile(binFileName, (std::fstream::out | std::fstream::binary));
 	  if(outBinFile.fail()) exitOnError("Cannot open binary file");
 	  outBinFile.write(bin[i],binSize[i]);

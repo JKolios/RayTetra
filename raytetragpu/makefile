@@ -10,5 +10,5 @@ raytetra: RayTetraGPU
 dumpBinary:DumpBinary
 
 clean:
-	rm -f *.o RayTetraGPU
+	rm -f *.o *.elf RayTetraGPU
 
