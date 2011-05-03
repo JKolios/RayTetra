@@ -12,7 +12,6 @@
 
 using namespace std;
 
-
 //Input data is stored here.
 cl_double4 *orig;//Ray Origin
 cl_double4 *dir;//Ray Direction
@@ -23,11 +22,14 @@ cl_double4 *vert3;
 
 
 //Output data is stored here.
-cl_double16 *output;//See kernel file for structure 
+cl_double8 *cartesian; //Cartesian Coordinates for the entry and exit points
+cl_double4 *barycentric; //Barycentric Coordinates for the same
+cl_double2 *parametric; //Parametric distances of entry and exit points from orig
 
-//Ray-Tetrahedron pairs processed in parallel 
+//Actual Ray-Tetrahedron pairs processed. 
 cl_int actual_width;
 
+//actual_width padded to a multiple of 64
 cl_int padded_width;
 
 //The memory buffers that are used as input/output to the OpenCL kernel
@@ -38,7 +40,9 @@ cl_mem vert1_buf;
 cl_mem vert2_buf;
 cl_mem vert3_buf;
 
-cl_mem output_buf;
+cl_mem cartesian_buf;
+cl_mem barycentric_buf;
+cl_mem parametric_buf;
 
 
 //CL Context and kernel objects
@@ -58,6 +62,8 @@ const char *kernelName;
 //Default is 0 (First GPU listed in the platform)
 cl_int deviceNum = 0;
 
+//Return codes from OpenCL API calls
+//Used for error tracking
 cl_int status= 0;
 
 //Input and output filenames
@@ -66,6 +72,9 @@ const char *inFileName,*outFileName;
 //Function Declarations
 //CL environment init
 void initializeCL(void);
+
+//Input Processing
+void loadInput(void);
 
 //Handles kernel execution and I/O 
 void runCLKernels(void);
@@ -86,6 +95,7 @@ void printResults(void);
 void exitOnError(char const *error_text)
 {
 	printf("Error:%s\n",error_text);
+	printf("CL Status:%d\n",status);
 	exit(1);
 
 }

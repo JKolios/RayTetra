@@ -3,12 +3,10 @@ CXXFLAGS = -Wall -O2
 LDLIBS = -L $AMDAPPSDKROOT/lib/x86_64 -lOpenCL
 
 
-all:  raytetra 
+all:  raytetragpu 
 
-raytetra: RayTetraGPU
-
-dumpBinary:DumpBinary
+raytetragpu: RayTetraGPU
 
 clean:
-	rm -f *.o *.elf RayTetraGPU
+	rm -f *.o *.elf *.txt RayTetraGPU
 

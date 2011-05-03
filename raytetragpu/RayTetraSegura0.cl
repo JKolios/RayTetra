@@ -1,13 +1,16 @@
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 
 //Base Segura Algorithm
-__kernel void RayTetraSegura0(		__global double4* orig,
-					__global double4* dest,
-					__global double4* vert0,
-					__global double4* vert1,
-					__global double4* vert2,
-					__global double4* vert3,
-					__global double16* output)
+__kernel void RayTetraSegura0(
+				__constant double4* orig,
+				__constant double4* dest,
+				__constant double4* vert0,
+				__constant double4* vert1,
+				__constant double4* vert2,
+				__constant double4* vert3,
+				__global double8* cartesian,
+				__global double4* barycentric,
+				__global double2* parametric)
 {
 	uint tid = get_global_id(0);
 
@@ -190,19 +193,19 @@ __kernel void RayTetraSegura0(		__global double4* orig,
 	tLeave = (leaveface != -1)? tLeave : 0;
 
 
-	output[tid].s0 = enterface;
-	output[tid].s1 = leaveface;
-	output[tid].s2 = uEnter1;
-	output[tid].s3 = uEnter2; 
-	output[tid].s4 = enterPoint.s0;
-	output[tid].s5 = enterPoint.s1;
-	output[tid].s6 = enterPoint.s2;
-	output[tid].s7 = uLeave1;
-	output[tid].s8 = uLeave2;
-	output[tid].s9 = leavePoint.s0;
-	output[tid].sA = leavePoint.s1;
-	output[tid].sB = leavePoint.s2;	 
-	output[tid].sC = tEnter;
-	output[tid].sD = tLeave;
+	cartesian[tid].s0 = enterface;
+	cartesian[tid].s1 = leaveface; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 }
 

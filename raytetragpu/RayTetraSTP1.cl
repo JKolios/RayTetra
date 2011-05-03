@@ -1,38 +1,16 @@
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 
-double16 assignOutput(int enterFace,int leaveFace, 
-					double uEnter1, double uEnter2,
-					double uLeave1,double uLeave2,
-					double4 enterPoint,double4 leavePoint,
-					double tEnter,double tLeave)
-{
-    double16 output;
-	output.s0 = enterFace;
-	output.s1 = leaveFace;
-	output.s2 = uEnter1;
-	output.s3 = uEnter2; 
-	output.s4 = enterPoint.s0;
-	output.s5 = enterPoint.s1;
-	output.s6 = enterPoint.s2;
-	output.s7 = uLeave1;
-	output.s8 = uLeave2;
-	output.s9 = leavePoint.s0;
-	output.sA = leavePoint.s1;
-	output.sB = leavePoint.s2;	 
-	output.sC = tEnter;
-	output.sD = tLeave;
-	return output;
-
-					}
-					
 //Section 3.2 Optimizations added
-__kernel void RayTetraSTP1(__global double4* orig,
-							  __global double4* dest,
-							  __global double4* vert0,
-							  __global double4* vert1,
-							  __global double4* vert2,
-							  __global double4* vert3,
-							  __global double16* output)
+__kernel void RayTetraSTP1(
+				__constant double4* orig,
+				__constant double4* dest,
+				__constant double4* vert0,
+				__constant double4* vert1,
+				__constant double4* vert2,
+				__constant double4* vert3,
+				__global double8* cartesian,
+				__global double4* barycentric,
+				__global double2* parametric)
 {
 	uint tid = get_global_id(0);
 
@@ -148,11 +126,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	      tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	      tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	    }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	  }else{
 	    enterFace = 2;
@@ -174,11 +161,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	      tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	      tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	    }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	  }
 	}
@@ -216,11 +212,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	    tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	    tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	  }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	}else{
 	  enterFace = 1;
@@ -242,11 +247,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	    tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	    tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	  }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	}
       }else{
@@ -273,11 +287,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	    tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	    tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	  }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	}else{
 	  enterFace = 0;
@@ -299,11 +322,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	    tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	    tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	  }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	}
 	
@@ -389,11 +421,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	      tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	      tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	    }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	  }else{
 	    enterFace = 1;
@@ -415,11 +456,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	      tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	      tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	    }
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	  }
 	}
@@ -448,11 +498,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	  tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	  tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	}
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
       }else{
 	enterFace = 0;
@@ -474,11 +533,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	  tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	  tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	}
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
       }
     }
@@ -541,11 +609,20 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	  tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	  tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	}
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
       }
       else  {
@@ -572,21 +649,39 @@ __kernel void RayTetraSTP1(__global double4* orig,
 	  tEnter = (enterPoint.s2 - orig[tid].s2) * invDirz;
 	  tLeave = (leavePoint.s2 - orig[tid].s2) * invDirz;
 	}
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
       }
     }
   }
   
   // Three faces do not intersect with the ray, the fourth will not.
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 }

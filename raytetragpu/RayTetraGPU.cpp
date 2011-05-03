@@ -1,8 +1,7 @@
 #include "RayTetraGPU.hpp"
 
-
-//Host Initialization 
-void initializeHost(void)
+//Input
+void loadInput(void)
 {
 	std::ifstream inputFile;
 	inputFile.open(inFileName);
@@ -12,32 +11,36 @@ void initializeHost(void)
 	//Determine the amount of false entries to pad the input arrays with.
 	//Create a workgroup size of 64 
 	padded_width = actual_width + (64 - (actual_width % 64));
-
-	//All arrays containing vector data types must be allocated using _aligned_malloc(size,alignment)
+	printf("Padded Width:%d\n",padded_width);
 
 	//Input Arrays
 	orig = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
-	if(orig == NULL) exitOnError("Failed to allocate input memory on host");
+	if(orig == NULL) exitOnError("Failed to allocate input memory on host(orig)");
 
 	dir = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
-	if(dir == NULL) exitOnError("Failed to allocate input memory on host");
+	if(dir == NULL) exitOnError("Failed to allocate input memory on host(dir)");
 
 	vert0 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
-	if(vert0 == NULL) exitOnError("Failed to allocate input memory on host");
+	if(vert0 == NULL) exitOnError("Failed to allocate input memory on host(vert0)");
 
 	vert1 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
-	if(vert1 == NULL) exitOnError("Failed to allocate input memory on host");
+	if(vert1 == NULL) exitOnError("Failed to allocate input memory on host(vert1)");
 
 	vert2 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
-	if(vert2 == NULL) exitOnError("Failed to allocate input memory on host");
+	if(vert2 == NULL) exitOnError("Failed to allocate input memory on host(vert2)");
 
 	vert3 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
-	if(vert3 == NULL) exitOnError("Failed to allocate input memory on host");
+	if(vert3 == NULL) exitOnError("Failed to allocate input memory on host(vert3)");
 
-	//Output Array
-
-	output = (cl_double16*)malloc(padded_width * sizeof(cl_double16));
-	if(output == NULL) exitOnError("Failed to allocate output memory on host");
+	//Output Arrays
+	cartesian = (cl_double8*)malloc(padded_width * sizeof(cl_double8));
+	if(cartesian == NULL) exitOnError("Failed to allocate output memory on host(cartesian)");
+	
+	barycentric = (cl_double4*)malloc(padded_width * sizeof(cl_double4));
+	if(barycentric == NULL) exitOnError("Failed to allocate output memory on host(barycentric)");
+	
+	parametric = (cl_double2*)malloc(padded_width * sizeof(cl_double2));
+	if(parametric == NULL) exitOnError("Failed to allocate output memory on host(parametric)");
 
 	// Input Initialization
 	cl_int i;
@@ -76,35 +79,6 @@ void initializeHost(void)
 		dir[i].s[3] = 0.0;
 
 	}
-
-	/*for(i = actual_width ;i<padded_width;i++)
-	{
-	vert0[i].s[0] = 0.0;
-	vert0[i].s[1] = 0.0;
-	vert0[i].s[2] = 0.0;
-	vert0[i].s[3] = 0.0;
-	vert1[i].s[0] = 0.0;
-	vert1[i].s[1] = 0.0;
-	vert1[i].s[2] = 0.0;
-	vert1[i].s[3] = 0.0;
-	vert2[i].s[0] = 0.0;
-	vert2[i].s[1] = 0.0;
-	vert2[i].s[2] = 0.0;
-	vert2[i].s[3] = 0.0;
-	vert3[i].s[0] = 0.0;
-	vert3[i].s[1] = 0.0;
-	vert3[i].s[2] = 0.0;
-	vert3[i].s[3] = 0.0;		
-	orig[i].s[0] = 0.0;
-	orig[i].s[1] = 0.0; 
-	orig[i].s[2] = 0.0; 
-	orig[i].s[3] = 0.0;
-	dir[i].s[0] = 0.0;
-	dir[i].s[1] = 0.0;
-	dir[i].s[2] = 0.0;
-	dir[i].s[3] = 0.0;
-
-	}*/
 
 	inputFile.close();
 }
@@ -155,7 +129,6 @@ std::string convertToString(const char *filename)
 void
 initializeCL(void)
 {
-	cl_int status = 0;
 	size_t deviceListSize;
 
 	/*
@@ -240,71 +213,6 @@ initializeCL(void)
 		0, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Creating Command Queue. (clCreateCommandQueue).");
-
-	/////////////////////////////////////////////////////////////////
-	// Create OpenCL memory buffers
-	/////////////////////////////////////////////////////////////////
-
-
-
-	//Input buffers
-	orig_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
-		sizeof(cl_double4) * padded_width,
-		orig, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("clCreateBuffer"); 
-
-	dir_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
-		sizeof(cl_double4) * padded_width,
-		dir, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("clCreateBuffer"); 
-
-
-	vert0_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
-		sizeof(cl_double4) * padded_width,
-		vert0, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("clCreateBuffer"); 
-
-	vert1_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
-		sizeof(cl_double4) * padded_width,
-		vert1, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("clCreateBuffer");
-
-	vert2_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
-		sizeof(cl_double4) * padded_width,
-		vert2, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("clCreateBuffer"); 
-
-	vert3_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
-		sizeof(cl_double4) * padded_width,
-		vert3, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("clCreateBuffer"); 
-
-	//Output buffer
-	output_buf = clCreateBuffer(
-		context, 
-		CL_MEM_WRITE_ONLY| CL_MEM_USE_HOST_PTR ,
-		sizeof(cl_double16) * padded_width,
-		output, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("clCreateBuffer");
 	
 	//Kernel Loading/Compilation	
 	char binFileName[255];
@@ -334,7 +242,7 @@ initializeCL(void)
 	
 		// create a cl program executable for all the devices specified 
 		status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
-		if(status != CL_SUCCESS) exitOnError("Building program(clBuildProgram)");
+		if(status != CL_SUCCESS) exitOnError("Building program from source (clBuildProgram)");
 
 		//Export Binary Images to file
 		dumpBinary(program);
@@ -364,12 +272,14 @@ initializeCL(void)
 	  
 	  // create a cl program executable for all the devices specified 
 	  status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
-	  if(status != CL_SUCCESS) exitOnError("Building program(clBuildProgram)");
+	  if(status != CL_SUCCESS) exitOnError("Building program from binary(clBuildProgram)");
 	}
 
-	/* get a kernel object handle for a kernel with the given name */
+	// get a kernel object handle for a kernel with the given name 
 	kernel = clCreateKernel(program,kernelName,&status);
 	if(status != CL_SUCCESS) exitOnError(" Creating Kernel from program. (clCreateKernel)");
+
+	
 }
 
 
@@ -381,25 +291,110 @@ initializeCL(void)
 */
 void runCLKernels(void)
 {
-	cl_int   status;
-	cl_event events[2];
+	cl_event events[4];
 	size_t globalThreads[1];
 	size_t localThreads[1];
-
+	
 	//The maximum workgroup size usable for the current kernel
-	/*cl_uint max_local_size;
+	size_t maxLocalSize;
 	status = clGetKernelWorkGroupInfo(
 	kernel,
 	devices[0],
 	CL_KERNEL_WORK_GROUP_SIZE,
-	sizeof(cl_uint),
-	&max_local_size,NULL);
-	if(status != CL_SUCCESS) exitOnError("Getting maximum workgroup size. (clGetKernelWorkGroupInfo)");*/
+	sizeof(size_t),
+	&maxLocalSize,NULL);
+	if(status != CL_SUCCESS) {
+	  exitOnError("Getting maximum workgroup size. (clGetKernelWorkGroupInfo)");
+	}
+	
+	printf("Max Local Size:%zu\n",maxLocalSize);
+	
+	
 
 	globalThreads[0] = padded_width;
 	localThreads[0]= 64;  
+	
+	
+	/////////////////////////////////////////////////////////////////
+	// Create OpenCL memory buffers
+	/////////////////////////////////////////////////////////////////
 
-	/*** Set appropriate arguments to the kernel ***/
+	//Input buffers
+	orig_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
+		sizeof(cl_double4) * padded_width,
+		orig, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(orig)"); 
+
+	dir_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
+		sizeof(cl_double4) * padded_width,
+		dir, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(dir)"); 
+
+
+	vert0_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
+		sizeof(cl_double4) * padded_width,
+		vert0, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert0)"); 
+
+	vert1_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
+		sizeof(cl_double4) * padded_width,
+		vert1, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert1)");
+
+	vert2_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
+		sizeof(cl_double4) * padded_width,
+		vert2, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert2)"); 
+
+	vert3_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR ,
+		sizeof(cl_double4) * padded_width,
+		vert3, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert3)"); 
+
+	//Output buffers
+	cartesian_buf = clCreateBuffer(
+		context, 
+		CL_MEM_WRITE_ONLY| CL_MEM_USE_HOST_PTR ,
+		sizeof(cl_double8) * padded_width,
+		cartesian, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(cartesian_buf)");
+	
+	barycentric_buf = clCreateBuffer(
+	context, 
+	CL_MEM_WRITE_ONLY| CL_MEM_USE_HOST_PTR ,
+	sizeof(cl_double4) * padded_width,
+	barycentric, 
+	&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(barycentric_buf)");
+	
+	parametric_buf = clCreateBuffer(
+	context, 
+	CL_MEM_WRITE_ONLY| CL_MEM_USE_HOST_PTR ,
+	sizeof(cl_double2) * padded_width,
+	parametric, 
+	&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");	
+
+	//Assign the buffers as kernel arguments
 	status = clSetKernelArg(
 		kernel, 
 		0, 
@@ -446,8 +441,22 @@ void runCLKernels(void)
 		kernel, 
 		6, 
 		sizeof(cl_mem), 
-		(void *)&output_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (output_buf)"); 
+		(void *)&cartesian_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
+	
+	status = clSetKernelArg(
+		kernel, 
+		7, 
+		sizeof(cl_mem), 
+		(void *)&barycentric_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
+	
+		status = clSetKernelArg(
+		kernel, 
+		8, 
+		sizeof(cl_mem), 
+		(void *)&parametric_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
 
 	/* 
 	* Enqueue a kernel run call.
@@ -462,38 +471,75 @@ void runCLKernels(void)
 		0,
 		NULL,
 		&events[0]);
-	if(status != CL_SUCCESS) exitOnError("Error: Enqueueing kernel onto command queue.(clEnqueueNDRangeKernel)"); 
+	if(status != CL_SUCCESS) exitOnError("Enqueueing kernel onto command queue.(clEnqueueNDRangeKernel)"); 
 
 
 
-	/* wait for the kernel call to finish execution */
+	
 	status = clWaitForEvents(1,&events[0]);
 	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
 
 	status = clReleaseEvent(events[0]);
 	if(status != CL_SUCCESS) exitOnError(" clReleaseEvent. (events[0])");
 
-	/* Enqueue readBuffer*/
+	
 	status = clEnqueueReadBuffer(
 		commandQueue,
-		output_buf,
-		CL_TRUE,
+		cartesian_buf,
+		CL_FALSE,
 		0,
-		padded_width * sizeof(cl_double16),
-		output,
+		actual_width * sizeof(cl_double8),
+		cartesian,
 		0,
 		NULL,
 		&events[1]);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
+	
+	status = clEnqueueReadBuffer(
+		commandQueue,
+		barycentric_buf,
+		CL_FALSE,
+		0,
+		actual_width * sizeof(cl_double4),
+		barycentric,
+		0,
+		NULL,
+		&events[2]);
 
+	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
+	
+	
+	status = clEnqueueReadBuffer(
+		commandQueue,
+		parametric_buf,
+		CL_FALSE,
+		0,
+		actual_width * sizeof(cl_double2),
+		parametric,
+		0,
+		NULL,
+		&events[3]);
 
-	/* Wait for the read buffer to finish execution */
+	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
+	
 	status = clWaitForEvents(1, &events[1]);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer call to finish.(clWaitForEvents)\n");
+	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer call to finish.(cartesian_buf)\n");
 
 	status = clReleaseEvent(events[1]);
-	if(status != CL_SUCCESS) exitOnError("clReleaseEvent. (events[1])\n");
+	if(status != CL_SUCCESS) exitOnError("clReleaseEvent. (cartesian_buf read)\n");
+	
+	status = clWaitForEvents(1, &events[2]);
+	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer call to finish.(barycentric_buf)\n");
+
+	status = clReleaseEvent(events[2]);
+	if(status != CL_SUCCESS) exitOnError("clReleaseEvent. (barycentric_buf read)\n");
+	
+	status = clWaitForEvents(1, &events[3]);
+	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer call to finish.(parametric_buf)\n");
+
+	status = clReleaseEvent(events[3]);
+	if(status != CL_SUCCESS) exitOnError("clReleaseEvent. (parametric_buf read)\n");
 }
 
 void dumpBinary(cl_program program)
@@ -530,56 +576,38 @@ void dumpBinary(cl_program program)
 
 // Print output to file 
 void printResults()
-
-/*	Kernel output:
-output[tid].s0 = enterface;
-output[tid].s1 = leaveface;
-output[tid].s2 = uEnter1;
-output[tid].s3 = uEnter2; 
-output[tid].s4 = enterPoint.s0;
-output[tid].s5 = enterPoint.s1;
-output[tid].s6 = enterPoint.s2;
-output[tid].s7 = uLeave1;
-output[tid].s8 = uLeave2;
-output[tid].s9 = leavePoint.s0;
-output[tid].sA = leavePoint.s1;
-output[tid].sB = leavePoint.s2;	 
-output[tid].sC = tEnter;
-output[tid].sD = tLeave;*/
 {
 	cl_int i;
 	std::ofstream outputFile;
 	outputFile.open(outFileName);
 	for(i = 0;i<actual_width;i++){
 
-		if((output[i].s[0] != -1) ||(output[i].s[1] != -1) ){
+		if((cartesian[i].s[0] != -1) && (cartesian[i].s[1] != -1) ){
 
 			outputFile  << "true" 
-				<< "   " << output[i].s[0] 
-			<< " " << output[i].s[1]
-			<< "   " << output[i].s[4]
-			<< " " << output[i].s[5]                               
-			<< " " << output[i].s[6]                               
-			<< "   " << output[i].s[9]
-			<< " " << output[i].s[10]                               
-			<< " " << output[i].s[11]   
-			<< "   " << output[i].s[2] 
-			<< " " << output[i].s[3] 
-			<< "   " << output[i].s[7] 
-			<< " " << output[i].s[8]
-			<< "   " << output[i].s[12] 
-			<< " " << output[i].s[13];
+				<< "   " << cartesian[i].s[0] 
+			<< " " << cartesian[i].s[1]
+			<< "   " << cartesian[i].s[2]
+			<< " " << cartesian[i].s[3]                               
+			<< " " << cartesian[i].s[4]                               
+			<< "   " << cartesian[i].s[5]
+			<< " " << cartesian[i].s[6]                               
+			<< " " << cartesian[i].s[7]   
+			<< "   " << barycentric[i].s[0] 
+			<< " " << barycentric[i].s[1] 
+			<< "   " << barycentric[i].s[2] 
+			<< " " << barycentric[i].s[3]
+			<< "   " << parametric[i].s[0] 
+			<< " " << parametric[i].s[1];
 		}else outputFile << "false";
 		outputFile << std::endl;
 
 	}
 	outputFile.close();
-
 }
 
 void cleanupCL(void)
 {
-	cl_int status;
 
 	status = clReleaseKernel(kernel);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseKernel \n");
@@ -605,8 +633,14 @@ void cleanupCL(void)
 	status = clReleaseMemObject(vert3_buf);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (vert3_buf)\n");
 
-	status = clReleaseMemObject(output_buf);
-	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (output_buf)\n");
+	status = clReleaseMemObject(cartesian_buf);
+	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (cartesian_buf)\n");
+	
+	status = clReleaseMemObject(barycentric_buf);
+	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (barycentric_buf)\n");
+	
+	status = clReleaseMemObject(parametric_buf);
+	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (parametric_buf)\n");
 
 	status = clReleaseCommandQueue(commandQueue);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseCommandQueue\n");
@@ -651,10 +685,20 @@ void cleanupHost(void)
 		vert3 = NULL;
 	}
 
-	if(output != NULL)
+	if(cartesian != NULL)
 	{
-		free(output);
-		output = NULL;
+		free(cartesian);
+		cartesian = NULL;
+	}
+	if(barycentric != NULL)
+	{
+		free(barycentric);
+		barycentric = NULL;
+	}
+	if(parametric != NULL)
+	{
+		free(parametric);
+		parametric = NULL;
 	}
 	if(devices != NULL)
 	{
@@ -710,8 +754,8 @@ int main(int argc, char * argv[])
 		if (argc==5) deviceNum=atoi(argv[4]);
 	}
 
-	// Initialize Host application 
-	initializeHost(); 
+	// Read and process input
+	loadInput(); 
 
 	// Initialize OpenCL resources
 	initializeCL();

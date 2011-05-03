@@ -1,38 +1,16 @@
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 
-double16 assignOutput(int enterFace,int leaveFace, 
-					double uEnter1, double uEnter2,
-					double uLeave1,double uLeave2,
-					double4 enterPoint,double4 leavePoint,
-					double tEnter,double tLeave)
-{
-    double16 output;
-	output.s0 = enterFace;
-	output.s1 = leaveFace;
-	output.s2 = uEnter1;
-	output.s3 = uEnter2; 
-	output.s4 = enterPoint.s0;
-	output.s5 = enterPoint.s1;
-	output.s6 = enterPoint.s2;
-	output.s7 = uLeave1;
-	output.s8 = uLeave2;
-	output.s9 = leavePoint.s0;
-	output.sA = leavePoint.s1;
-	output.sB = leavePoint.s2;	 
-	output.sC = tEnter;
-	output.sD = tLeave;
-	return output;
-
-					}
-					
 //Section 3.3 Modifications added
-__kernel void RayTetraSTP2(__global double4* orig,
-							  __global double4* dest,
-							  __global double4* vert0,
-							  __global double4* vert1,
-							  __global double4* vert2,
-							  __global double4* vert3,
-							  __global double16* output)
+__kernel void RayTetraSTP2(
+				__constant double4* orig,
+				__constant double4* dest,
+				__constant double4* vert0,
+				__constant double4* vert1,
+				__constant double4* vert2,
+				__constant double4* vert3,
+				__global double8* cartesian,
+				__global double4* barycentric,
+				__global double2* parametric)
 {
 	uint tid = get_global_id(0);
 
@@ -99,11 +77,20 @@ __kernel void RayTetraSTP2(__global double4* orig,
     if ((signQAD == 0)  &&  (signQDB == 0))  {
       if (signQDC == 0)  {
 	// The tetrahedron is flat and the ray is on its plane
-	output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
       }
       else  {
@@ -135,11 +122,20 @@ __kernel void RayTetraSTP2(__global double4* orig,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	}
 	else  {
@@ -169,11 +165,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	}
       }
@@ -214,11 +219,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	  tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	}
 	
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	  }
 	  else  {
@@ -245,11 +259,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	      tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	    }
 	    
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	  }
       }
@@ -293,11 +316,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	  tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	}
 	
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 	return;
 	  }
 	  else  {
@@ -324,20 +356,38 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	      tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	    }
 	    
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	  }
       }
       else  {
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
       }
     }
@@ -441,11 +491,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	int signQAD = sign(QAD);
 	
 	if (signQAD == -nextSign)  {
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	
@@ -455,11 +514,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	int signQDB = sign(QDB);
 	
 	if (signQDB == -nextSign)  {
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	
@@ -516,11 +584,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	else  {
@@ -546,11 +623,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	  }
@@ -580,11 +666,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 		tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	      }
 	      
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);		
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;		
 				return;
 	    }
 	    else  {
@@ -610,11 +705,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 		tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	      }
 	      
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);		
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;		
 				return;
 	    }
 	  }
@@ -627,11 +731,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	int signQDC = sign(QDC);
 	
 	if (signQDC == nextSign)  {
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	
@@ -640,11 +753,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	int signQAD = sign(QAD);
 	
 	if (signQAD == nextSign)  {
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	
@@ -701,11 +823,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	else  {
@@ -731,11 +862,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	  }
@@ -765,11 +905,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 		tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	      }
 	      
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);		
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;		
 				return;
 	    }
 	    else  {
@@ -795,11 +944,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 		tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	      }
 	      
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);		
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;		
 				return;
 	    }
 	  }
@@ -813,11 +971,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	
 	
 	if (signQDC == -nextSign)  {
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	
@@ -825,11 +992,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	int signQDB = sign(QDB);
 	
 	if (signQDB == nextSign)  {
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	
@@ -886,11 +1062,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	else  {
@@ -916,11 +1101,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	    tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	  }
 	  
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
 	}
 	  }
@@ -950,11 +1144,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 		tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	      }
 	      
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);		
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;		
 				return;
 	    }
 	    else  {
@@ -980,11 +1183,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 		tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	      }
 	      
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);		
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;		
 				return;
 	    }
 	  } 
@@ -1036,11 +1248,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	tEnter = (enterPoint.z - orig[tid].z) * invDirz;
       }
       
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
     }
     else  {
@@ -1066,11 +1287,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	tEnter = (enterPoint.z - orig[tid].z) * invDirz;
       }
       
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
     }
       }           
@@ -1110,11 +1340,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
       tEnter = (enterPoint.z - orig[tid].z) * invDirz;
     }
     
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
   }
   else  {
@@ -1140,11 +1379,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
       tEnter = (enterPoint.z - orig[tid].z) * invDirz;
     }
     
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
   }
     }
@@ -1178,11 +1426,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	  tEnter = (enterPoint.z - orig[tid].z) * invDirz;
 	}
 	
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;
 		return;
       }
       else  {
@@ -1209,11 +1466,20 @@ output[tid] = assignOutput(enterFace,leaveFace,
 	}
 	
 	
-output[tid] = assignOutput(enterFace,leaveFace, 
-				uEnter1,uEnter2,
-				uLeave1,uLeave2,
-				enterPoint,leavePoint,
-				tEnter,tLeave);		
+	cartesian[tid].s0 = enterFace;
+	cartesian[tid].s1 = leaveFace; 
+	cartesian[tid].s2 = enterPoint.s0;
+	cartesian[tid].s3 = enterPoint.s1; 
+	cartesian[tid].s4 = enterPoint.s2;
+	cartesian[tid].s5 = leavePoint.s0;
+	cartesian[tid].s6 = leavePoint.s1;
+	cartesian[tid].s7 = leavePoint.s2;
+	barycentric[tid].s0 = uEnter1;
+	barycentric[tid].s1 = uEnter2;
+	barycentric[tid].s2 = uLeave1;
+	barycentric[tid].s3 = uLeave2;	 
+	parametric[tid].s0 = tEnter;
+	parametric[tid].s1 = tLeave;		
       return;
       }
     }
