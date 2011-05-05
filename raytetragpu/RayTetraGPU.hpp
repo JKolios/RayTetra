@@ -2,6 +2,12 @@
 #ifndef RAYTETRAGPU_H_
 #define RAYTETRAGPU_H_
 
+//The number of work items launched in every Compute Unit of the target device
+//at a given time.
+#define DEVICE_WORK_ITEMS_PER_WAVEFRONT 64
+
+//The maximum number of work items to use per kernel execution
+#define DEVICE_WORK_ITEMS_PER_LAUNCH 910016
 
 #include <CL/cl.h>
 #include <string.h>
@@ -29,7 +35,7 @@ cl_double2 *parametric; //Parametric distances of entry and exit points from ori
 //Actual Ray-Tetrahedron pairs processed. 
 cl_int actual_width;
 
-//actual_width padded to a multiple of 64
+//actual_width padded to a multiple of DEVICE_WORK_ITEMS_PER_WAVEFRONT
 cl_int padded_width;
 
 //The memory buffers that are used as input/output to the OpenCL kernel

@@ -10,7 +10,10 @@ void loadInput(void)
 
 	//Determine the amount of false entries to pad the input arrays with.
 	//Create a workgroup size of 64 
-	padded_width = actual_width + (64 - (actual_width % 64));
+	
+	
+	if((actual_width % 64) != 0) padded_width = actual_width + (64 - (actual_width % 64));
+	else padded_width = actual_width;
 	printf("Padded Width:%d\n",padded_width);
 
 	//Input Arrays
@@ -295,26 +298,9 @@ void runCLKernels(void)
 	size_t globalThreads[1];
 	size_t localThreads[1];
 	
-	//The maximum workgroup size usable for the current kernel
-	size_t maxLocalSize;
-	status = clGetKernelWorkGroupInfo(
-	kernel,
-	devices[0],
-	CL_KERNEL_WORK_GROUP_SIZE,
-	sizeof(size_t),
-	&maxLocalSize,NULL);
-	if(status != CL_SUCCESS) {
-	  exitOnError("Getting maximum workgroup size. (clGetKernelWorkGroupInfo)");
-	}
 	
-	printf("Max Local Size:%zu\n",maxLocalSize);
-	
-	
-
-	globalThreads[0] = padded_width;
-	localThreads[0]= 64;  
-	
-	
+	localThreads[0]= DEVICE_WORK_ITEMS_PER_WAVEFRONT;  
+		
 	/////////////////////////////////////////////////////////////////
 	// Create OpenCL memory buffers
 	/////////////////////////////////////////////////////////////////
@@ -458,14 +444,49 @@ void runCLKernels(void)
 		(void *)&parametric_buf);
 	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
 
-	/* 
-	* Enqueue a kernel run call.
-	*/
+	//Break up kernel execution to 1 exec per DEVICE_WORK_ITEMS_PER_LAUNCH work items.
+	cl_uint remaining_width = padded_width;
+	size_t thread_offset[3] = {0,0,0};
+	
+	while(remaining_width > DEVICE_WORK_ITEMS_PER_LAUNCH)
+	{
+	
+	  //Enqueue a kernel run call.	
+	  globalThreads[0] = DEVICE_WORK_ITEMS_PER_LAUNCH;
+	  printf("Running kernel with work_items:%zu and offset %zu\n",globalThreads[0],thread_offset[0]);
+	  status = clEnqueueNDRangeKernel(
+		  commandQueue,
+		  kernel,
+		  1,
+		  thread_offset,
+		  globalThreads,
+		  localThreads,
+		  0,
+		  NULL,
+		  &events[0]);
+	  if(status != CL_SUCCESS) exitOnError("Enqueueing kernel onto command queue.(clEnqueueNDRangeKernel)"); 
+
+	
+	  status = clWaitForEvents(1,&events[0]);
+	  if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
+
+	  status = clReleaseEvent(events[0]);
+	  if(status != CL_SUCCESS) exitOnError(" clReleaseEvent. (events[0])");
+	
+	 thread_offset[0]+=DEVICE_WORK_ITEMS_PER_LAUNCH;
+	 remaining_width-=DEVICE_WORK_ITEMS_PER_LAUNCH;
+	  
+	}
+		
+	//Final kernel run call for remaining work_items
+	globalThreads[0] = remaining_width;
+	printf("Running kernel with work_items:%zu and offset %zu\n",globalThreads[0],thread_offset[0]);
+	
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
 		kernel,
 		1,
-		NULL,
+		thread_offset,
 		globalThreads,
 		localThreads,
 		0,
@@ -473,14 +494,13 @@ void runCLKernels(void)
 		&events[0]);
 	if(status != CL_SUCCESS) exitOnError("Enqueueing kernel onto command queue.(clEnqueueNDRangeKernel)"); 
 
-
-
 	
 	status = clWaitForEvents(1,&events[0]);
 	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
 
 	status = clReleaseEvent(events[0]);
 	if(status != CL_SUCCESS) exitOnError(" clReleaseEvent. (events[0])");
+	
 
 	
 	status = clEnqueueReadBuffer(
@@ -759,6 +779,8 @@ int main(int argc, char * argv[])
 
 	// Initialize OpenCL resources
 	initializeCL();
+	
+	
 
 	// Run the CL program
 	runCLKernels();
