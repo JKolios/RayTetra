@@ -33,10 +33,14 @@ cl_double4 *barycentric; //Barycentric Coordinates for the same
 cl_double2 *parametric; //Parametric distances of entry and exit points from orig
 
 //Actual Ray-Tetrahedron pairs processed. 
-cl_int actual_width;
+cl_uint actual_width;
 
 //actual_width padded to a multiple of DEVICE_WORK_ITEMS_PER_WAVEFRONT
-cl_int padded_width;
+cl_uint padded_width;
+
+//The width of the input and output buffers used
+//Must be <= DEVICE_WORK_ITEMS_PER_LAUNCH
+cl_uint buffer_width;
 
 //The memory buffers that are used as input/output to the OpenCL kernel
 cl_mem orig_buf;
