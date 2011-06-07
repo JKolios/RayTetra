@@ -2,6 +2,8 @@
 #include "../Common/NpVector.hpp"
 #include "../Common/NpProgramTimer.hpp"
 #include "../Common/NpCArrayAdapter.hpp"
+//GPU init and cleanup functions
+#include "gpuHandler.cpp"
 
 #include <iostream>
 #include <vector>
@@ -23,6 +25,8 @@ struct ProgramArguments
     unsigned int repetitions;
     int print;
     int displayResult;
+    bool gpuNeeded;
+    const char *gpuAlgName;
 };
 
 
@@ -102,6 +106,7 @@ int main(int argc, char* argv[])
 {
     ProgramArguments arguments;
 
+
     if (!ParseArgs(argc, argv, arguments))  {
         return -1;
     }
@@ -140,22 +145,95 @@ int main(int argc, char* argv[])
             dataFile >> v[i][0] >> v[i][1] >> v[i][2] >> v[i][3] 
                      >> orig[i] >> dest[i];
         }
+        
+        //If a GPU algorithm has been selected, initialise the GPU
+        if(arguments.gpuNeeded) {
+	  	
+	 allocateInput(nTests);
+	
+	 // Converting input to raytetragpu's input format
+	for(int i = 0;i<nTests;i++)
+	{
+
+		vert0[i].s[0] = v[i][0].x;
+		vert0[i].s[1] = v[i][0].y;
+		vert0[i].s[2] = v[i][0].z;	
+		vert0[i].s[3] = 0.0;
+
+		vert1[i].s[0] = v[i][1].x;
+		vert1[i].s[1] = v[i][1].y;
+		vert1[i].s[2] = v[i][1].z;	
+		vert1[i].s[3] = 0.0;
+
+		vert2[i].s[0] = v[i][2].x;
+		vert2[i].s[1] = v[i][2].y;
+		vert2[i].s[2] = v[i][2].z;	
+		vert2[i].s[3] = 0.0;
+
+		vert3[i].s[0] = v[i][3].x;
+		vert3[i].s[1] = v[i][3].y;
+		vert3[i].s[2] = v[i][3].z;	
+		vert3[i].s[3] = 0.0;
+
+		
+		origin[i].s[0] = orig[i].x;
+		origin[i].s[1] = orig[i].y; 
+		origin[i].s[2] = orig[i].z; 
+		origin[i].s[3] = 0.0;
+
+		dir[i].s[0] = dest[i].x;
+		dir[i].s[1] = dest[i].y;
+		dir[i].s[2] = dest[i].z;
+		dir[i].s[3] = 0.0;
+
+	}
+		
+	initializeCL(arguments.gpuAlgName);	  
+	}
 
         NpProgramTimer timer;
-        timer.Start();
-
+	timer.Start();
         for (unsigned int r = 0; r < arguments.repetitions; ++r)  {
-            for (int i = 0; i < nTests; ++i)  {
-                result[i] = arguments.algorithm(orig[i], (dest[i]-orig[i]),
+          if(arguments.gpuNeeded){  
+	    
+	    runCLKernels();	    
+	    for(int j=0;j < nTests;++j)
+	    {
+	      //cout << cartesian[j].s[0] << " " << cartesian[j].s[1]<<endl;
+	      result[j] = true ? ((cartesian[j].s[0] != -1) &&(cartesian[j].s[1] != -1)) : false;
+	      if(result[j])
+	      {
+		
+		  enterFace[j] = cartesian[j].s[0];
+		  leaveFace[j] = cartesian[j].s[1];
+		  enterPoint[j] = NpVector(cartesian[j].s[2],cartesian[j].s[3],cartesian[j].s[4]);
+		  leavePoint[j] = NpVector(cartesian[j].s[5],cartesian[j].s[6],cartesian[j].s[7]);
+		  ue1[j] = barycentric[j].s[0];
+		  ue2[j] = barycentric[j].s[1];
+		  ul1[j] = barycentric[j].s[2];
+		  ul2[j] = barycentric[j].s[3];
+		  tEnter[j] = parametric[j].s[0];
+		  tLeave[j] = parametric[j].s[1];
+	      
+	    }
+	}
+	    	    
+	  }else{
+	  for (int i = 0; i < nTests; ++i)  {
+	    result[i] = arguments.algorithm(orig[i], (dest[i]-orig[i]),
                                                 v[i],
                                                 enterFace[i], leaveFace[i],
                                                 enterPoint[i], leavePoint[i],
                                                 ue1[i], ue2[i], ul1[i], ul2[i],
                                                 tEnter[i], tLeave[i]);
+
+	    
+	  }
             }
         }
-        
         timer.Stop();
+        
+
         if ((arguments.print == 1)  ||  (arguments.print == 3))  {
             resultsFile << timer.TotalElapsedTime() << std::endl;
         }
@@ -191,6 +269,64 @@ int main(int argc, char* argv[])
         int enterFace = -2, leaveFace = -2;
         
         dataFile >> v[0] >> v[1] >> v[2] >> v[3] >> orig >> dest;
+	
+	if(arguments.gpuNeeded) {
+	  	
+	 allocateInput(1);
+
+	vert0[0].s[0] = v[0].x;
+	vert0[0].s[1] = v[0].y;
+	vert0[0].s[2] = v[0].z;	
+	vert0[0].s[3] = 0.0;
+
+	vert1[0].s[0] = v[1].x;
+	vert1[0].s[1] = v[1].y;
+	vert1[0].s[2] = v[1].z;	
+	vert1[0].s[3] = 0.0;
+
+	vert2[0].s[0] = v[2].x;
+	vert2[0].s[1] = v[2].y;
+	vert2[0].s[2] = v[2].z;	
+	vert2[0].s[3] = 0.0;
+
+	vert3[0].s[0] = v[3].x;
+	vert3[0].s[1] = v[3].y;
+	vert3[0].s[2] = v[3].z;	
+	vert3[0].s[3] = 0.0;
+
+		
+	origin[0].s[0] = orig.x;
+	origin[0].s[1] = orig.y; 
+	origin[0].s[2] = orig.z; 
+	origin[0].s[3] = 0.0;
+
+	dir[0].s[0] = dest.x;
+	dir[0].s[1] = dest.y;
+	dir[0].s[2] = dest.z;
+	dir[0].s[3] = 0.0;
+
+
+		
+	initializeCL(arguments.gpuAlgName);	  
+	}
+	
+	if(arguments.gpuNeeded){  
+	    
+		  runCLKernels();	    
+		  result = true ? ((cartesian[0].s[0] != -1) &&(cartesian[0].s[1] != -1)) : false;		
+		  enterFace = cartesian[0].s[0];
+		  leaveFace = cartesian[0].s[1];
+		  enterPoint = NpVector(cartesian[0].s[2],cartesian[0].s[3],cartesian[0].s[4]);
+		  leavePoint = NpVector(cartesian[0].s[5],cartesian[0].s[6],cartesian[0].s[7]);
+		  ue1 = barycentric[0].s[0];
+		  ue2 = barycentric[0].s[1];
+		  ul1 = barycentric[0].s[2];
+		  ul2 = barycentric[0].s[3];
+		  tEnter = parametric[0].s[0];
+		  tLeave = parametric[0].s[1];
+		  
+	      
+	    }else{
 
         result = arguments.algorithm(orig, (dest-orig),
                                      v,
@@ -198,6 +334,9 @@ int main(int argc, char* argv[])
                                      enterPoint, leavePoint,
                                      ue1, ue2, ul1, ul2,
                                      tEnter, tLeave);
+	}
+	
+    
 
         if (result)  {
             std::cout << enterFace << " " << leaveFace << std::endl;
@@ -214,6 +353,12 @@ int main(int argc, char* argv[])
         glutMainLoop();
     }
 
+    if(arguments.gpuNeeded){
+      
+      cleanupHost();
+      cleanupCL();
+      
+    }
     return 0;
 }
 
@@ -226,8 +371,9 @@ bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
     // Some default values for options
     arguments.print = 3;
     arguments.displayResult = -1;
+    arguments.gpuNeeded = false;
     
-    const char* short_options = "m:a:s:t:p:d:h";
+    const char* short_options = "m:a:s:t:g:p:d:h";
 
     bool stop = false;
     bool foundAlg = false;
@@ -314,6 +460,28 @@ bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
                 foundAlg = false;
                 stop = true;
             }
+	}
+         else if (c == 'g')  {
+            foundAlg = true;
+	    arguments.gpuNeeded = true;
+            if (std::strcmp(optarg, "0") == 0)  {
+                arguments.gpuAlgName = "RayTetraSegura0";
+            }
+            else if (std::strcmp(optarg, "1") == 0)  {
+                arguments.gpuAlgName = "RayTetraSTP0";
+
+            }
+            else if (std::strcmp(optarg, "2") == 0)  {
+                arguments.gpuAlgName = "RayTetraSTP1";
+            }
+            else if (std::strcmp(optarg, "3") == 0)  {
+                arguments.gpuAlgName = "RayTetraSTP2";
+            }
+            else  {
+                std::cerr << "There are only 4 variations of GPU Algorithms." << std::endl;
+                foundAlg = false;
+                stop = true;
+            }
         }
         else if (c == 'd')  {
             arguments.displayResult = std::atoi(optarg);
@@ -385,6 +553,8 @@ void PrintHelp(char* argv0)
     std::cerr << "\t-a:   Use Haines' algorithm." << std::endl;
     std::cerr << "\t-s i: Use Segura's algorithm i, i=0,1,2." << std::endl;
     std::cerr << "\t-t i: Use Segura's algorithm with STP calc i, i=0,1,2." << std::endl;
+    std::cerr << "\t-g i: Use OpenCl GPU algorithm i, i=0,1,2,3" << std::endl;
+    std::cerr << "\t\t 0=Segura0,1=STP0,2=STP1,3=STP2." << std::endl;
     
     std::cerr << std::endl << "Options may be:" << std::endl;
     std::cerr << "\t-h:   Print this help text and exit." << std::endl;

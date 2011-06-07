@@ -1,6 +1,6 @@
 CC = g++
 CXXFLAGS = -Wall -O2
-LDLIBS = -L/usr/X11R6/lib -lGL -lGLU -lglut
+LDLIBS = -L /usr/X11R6/lib -L $AMDAPPSDKROOT/lib/x86_64 -lGL -lGLU -lglut  -lOpenCL
 
 
 all: RandomRayTetra RayTetra RayTetraT Bench BenchT

@@ -95,4 +95,5 @@ bool RayTetraSTP2(
   double& uEnter1, double& uEnter2, double& uLeave1, double& uLeave2,
   double& tEnter, double& tLeave);
 
+
 #endif   // _RayTetraAlgorithms_hpp_
