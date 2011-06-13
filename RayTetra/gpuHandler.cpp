@@ -24,7 +24,7 @@
 //Actual Ray-Tetrahedron pairs processed. 
  cl_uint actual_width;
 
-//actual_width padded to a multiple of DEVICE_WORK_ITEMS_PER_WAVEFRONT
+//actual_width padded to a multiple of threads_per_group
  cl_uint padded_width;
 
 //The width of the input and output buffers used
@@ -52,10 +52,14 @@
  cl_program program;
 
  cl_kernel  kernel;
+ 
+//The number of work items(threads) launched for every work group of the target device
+//64 for AMD, 32 for Nvidia GPUs, ignored for CPUs
+cl_int threads_per_group = 1;
 
 //Device Number (for loading a premade binary)
 //Default is 0 (First GPU listed in the platform)
- cl_int deviceNum;
+ cl_int deviceNum = 0;
 
 //Return codes from OpenCL API calls
 //Used for error tracking
@@ -74,9 +78,88 @@ void runCLKernels(void)
 	size_t localThreads[1];
 	
 	
-	localThreads[0]= DEVICE_WORK_ITEMS_PER_WAVEFRONT;  
-		
+	localThreads[0]= threads_per_group;  
+	
+	//Create Input/Output buffers
+	
+	buffer_width = (padded_width <= DEVICE_WORK_ITEMS_PER_LAUNCH) ? padded_width:DEVICE_WORK_ITEMS_PER_LAUNCH;
 
+	// Create OpenCL memory buffers
+	//Input buffers
+	orig_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(orig)"); 
+
+	dir_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(dir)"); 
+
+
+	vert0_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert0)"); 
+
+	vert1_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert1)");
+
+	vert2_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert2)"); 
+
+	vert3_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert3)"); 
+
+	//Output buffers
+	cartesian_buf = clCreateBuffer(
+		context, 
+		CL_MEM_WRITE_ONLY,
+		sizeof(cl_double8) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(cartesian_buf)");
+
+	barycentric_buf = clCreateBuffer(
+	  context, 
+	  CL_MEM_WRITE_ONLY,
+	  sizeof(cl_double4) * buffer_width,
+	  NULL, 
+	  &status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(barycentric_buf)");
+
+	parametric_buf = clCreateBuffer(
+	  context, 
+	  CL_MEM_WRITE_ONLY,
+	  sizeof(cl_double2) * buffer_width,
+	  NULL, 
+	  &status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");
+	
 	//Assign the buffers as kernel arguments
 	status = clSetKernelArg(
 		kernel, 
@@ -441,10 +524,9 @@ void allocateInput(int actual_width)
 {
 	
 	//Determine the amount of false entries to pad the input arrays with.
-	//Create a workgroup size of 64 
-	if((actual_width % 64) != 0) padded_width = actual_width + (64 - (actual_width % 64));
+	//Create a workgroup size of threads_per_group 
+	if((actual_width % threads_per_group) != 0) padded_width = actual_width + (threads_per_group - (actual_width % threads_per_group));
 	else padded_width = actual_width;
-	//printf("Padded Width:%d\n",padded_width);
 		
 	//Input Arrays
 	origin = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
@@ -476,7 +558,6 @@ void allocateInput(int actual_width)
 	if(parametric == NULL) exitOnError("Failed to allocate output memory on host(parametric)");
 	
 }
-
 
 /*
 * Converts the contents of a file into a string
@@ -524,12 +605,7 @@ std::string convertToString(const char *filename)
 void initializeCL(const char *kernelName)
 {
 	size_t deviceListSize;
-
-	/*
-	* Have a look at the available platforms and pick either
-	* the AMD one if available or a reasonable default.
-	*/
-
+	//Identify available platforms and select one
 	cl_uint numPlatforms;
 	cl_platform_id platform = NULL;
 	status = clGetPlatformIDs(0, NULL, &numPlatforms);
@@ -550,7 +626,9 @@ void initializeCL(const char *kernelName)
 				NULL);
 			if(status != CL_SUCCESS) exitOnError(" Getting Platform Info. (clGetPlatformInfo)");
 			platform = platforms[i];
-			if(!strcmp(pbuff, "Advanced Micro Devices, Inc."))
+			//AMD or Nvidia Platforms are preferred
+			//If none of them are found the first available platform is used
+			if((!strcmp(pbuff, "Advanced Micro Devices, Inc.")) ||(!strcmp(pbuff,"NVIDIA Corporation")))
 			{
 				break;
 			}
@@ -558,16 +636,12 @@ void initializeCL(const char *kernelName)
 		delete platforms;
 	}
 	if(NULL == platform) exitOnError(" NULL platform found.");
-	/*
-	* If we could find our platform, use it. Otherwise use just available platform.
-	*/
+
 
 	cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
 
 
-	/////////////////////////////////////////////////////////////////
 	// Create an OpenCL context
-	/////////////////////////////////////////////////////////////////
 	context = clCreateContextFromType(cps, 
 		CL_DEVICE_TYPE_GPU, 
 		NULL, 
@@ -583,9 +657,7 @@ void initializeCL(const char *kernelName)
 		&deviceListSize);
 	if(status != CL_SUCCESS) exitOnError(" Error: Getting Context Info(device list size, clGetContextInfo).");
 
-	/////////////////////////////////////////////////////////////////
 	// Detect OpenCL devices
-	/////////////////////////////////////////////////////////////////
 	devices = (cl_device_id *)malloc(deviceListSize);
 	if(devices == 0) exitOnError(" Error: No devices found.");
 
@@ -598,9 +670,7 @@ void initializeCL(const char *kernelName)
 		NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting Context Info (device list, clGetContextInfo).");
 
-	/////////////////////////////////////////////////////////////////
 	// Create an OpenCL command queue
-	/////////////////////////////////////////////////////////////////
 	commandQueue = clCreateCommandQueue(
 		context, 
 		devices[0], 
@@ -609,10 +679,21 @@ void initializeCL(const char *kernelName)
 	if(status != CL_SUCCESS) exitOnError("Creating Command Queue. (clCreateCommandQueue).");
 	
 	//Kernel Loading/Compilation	
-	char binFileName[255];
-	char deviceName[255];
-	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_NAME,255,deviceName,NULL);
-	if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number");
+	
+	//Identify the target device
+	char binFileName[MAX_NAME_LENGTH];
+	char deviceName[MAX_NAME_LENGTH];
+	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_NAME,MAX_NAME_LENGTH,deviceName,NULL);
+	if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number(clGetDeviceInfo)");
+	
+	//Identify the device's vendor (used to set threads_per_group)
+	char deviceVendorName[MAX_NAME_LENGTH];
+	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH,deviceVendorName,NULL);
+	if (status != CL_SUCCESS) exitOnError("Cannot get device vendor's name for given device number(clGetDeviceInfo)");
+	
+	if(!strcmp(deviceVendorName, "Advanced Micro Devices, Inc.")) threads_per_group = 64;
+	if(!strcmp(deviceVendorName, "NVIDIA Corporation")) threads_per_group = 32;
+	
 	printf("Using Device:%s\n",deviceName);
 	sprintf(binFileName,"%s_%s.elf",kernelName,deviceName);
 	std::fstream inBinFile(binFileName, (ios::in|ios::binary|ios::ate));
@@ -621,7 +702,7 @@ void initializeCL(const char *kernelName)
 		inBinFile.close();	
 		printf("No binary image found for specified kernel and device,compiling a new one.\n");
 	  
-		char sourceFileName[255]; 
+		char sourceFileName[MAX_NAME_LENGTH]; 
 		sprintf(sourceFileName,"%s.cl",kernelName);
 		std::string  sourceStr = convertToString(sourceFileName);
 		if (sourceStr == "NULL") exitOnError("Cannot read kernel source file");
@@ -638,14 +719,34 @@ void initializeCL(const char *kernelName)
 	
 		// create a cl program executable for all the devices specified 
 		status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
-		if(status != CL_SUCCESS) exitOnError("Building program from source (clBuildProgram)");
+		if (status != CL_SUCCESS) {
+		  
+		  //Build failed.
+		  printf("Error building program(clBuildProgram)\nCompiler Output:\n");
+		  
+		  //Retrieve the size of the build log
+		  char* build_log;
+		  size_t log_size;
+		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log size.(clGetProgramBuildInfo)");
+		  build_log = (char*)malloc(log_size+1);
+		  
+		  // Get and display the build log
+		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log.(clGetProgramBuildInfo)");
+		  build_log[log_size] = '\0';
+		  printf("%s\n",build_log);
+		  free (build_log);
+		  printf("End of Compiler Output.\n");
+		  exit(1);
+				  
+		}
 
 		//Export Binary Images to file
 		dumpBinary(program,kernelName);
 	  
 	}else{
-	
-	  //printf("Binary image found:%s\n",binFileName);	    
+		    
 	  size_t  *binSize = (size_t*)malloc(sizeof(size_t));	  
 	  char* bin;  
 	  *binSize = inBinFile.tellg();
@@ -668,92 +769,34 @@ void initializeCL(const char *kernelName)
 	  
 	  // create a cl program executable for all the devices specified 
 	  status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
-	  if(status != CL_SUCCESS) exitOnError("Building program from binary(clBuildProgram)");
+	  if (status != CL_SUCCESS) {
+		  
+		  //Build failed.
+		  printf("Error building program(clBuildProgram)\nCompiler Output:\n");
+		  
+		  //Retrieve the size of the build log
+		  char* build_log;
+		  size_t log_size;
+		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log size.(clGetProgramBuildInfo)");
+		  build_log = (char*)malloc(log_size+1);
+		  
+		  // Get and display the build log
+		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log.(clGetProgramBuildInfo)");
+		  build_log[log_size] = '\0';
+		  printf("%s\n",build_log);
+		  free (build_log);
+		  printf("End of Compiler Output.");
+		  exit(1);
+				  
+		}
+
 	}
 
 	// get a kernel object handle for a kernel with the given name 
 	kernel = clCreateKernel(program,kernelName,&status);
 	if(status != CL_SUCCESS) exitOnError(" Creating Kernel from program. (clCreateKernel)");
-	
-	buffer_width = (padded_width <= DEVICE_WORK_ITEMS_PER_LAUNCH) ? padded_width:DEVICE_WORK_ITEMS_PER_LAUNCH;
-	//printf("Buffer Width:%d\n",buffer_width);
-
-	// Create OpenCL memory buffers
-	//Input buffers
-	orig_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(orig)"); 
-
-	dir_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(dir)"); 
-
-
-	vert0_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert0)"); 
-
-	vert1_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert1)");
-
-	vert2_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert2)"); 
-
-	vert3_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert3)"); 
-
-	//Output buffers
-	cartesian_buf = clCreateBuffer(
-		context, 
-		CL_MEM_WRITE_ONLY,
-		sizeof(cl_double8) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(cartesian_buf)");
-
-	barycentric_buf = clCreateBuffer(
-	  context, 
-	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double4) * buffer_width,
-	  NULL, 
-	  &status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(barycentric_buf)");
-
-	parametric_buf = clCreateBuffer(
-	  context, 
-	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double2) * buffer_width,
-	  NULL, 
-	  &status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");
-	
 	
 }
 
@@ -775,11 +818,11 @@ void dumpBinary(cl_program program,const char * kernelName)
 	status = clGetProgramInfo(program,CL_PROGRAM_BINARIES,sizeof(binSize),bin,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting program binaries(clGetProgramInfo)");
 
-	char binFileName[255];
+	char binFileName[MAX_NAME_LENGTH];
 	for(cl_uint i = 0;i<deviceCount;i++)
 	{
-	  char deviceName[255];
-	  status = clGetDeviceInfo(devices[i],CL_DEVICE_NAME,255,deviceName,NULL);
+	  char deviceName[MAX_NAME_LENGTH];
+	  status = clGetDeviceInfo(devices[i],CL_DEVICE_NAME,MAX_NAME_LENGTH,deviceName,NULL);
 	  if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number");
 	  printf("Exporting Kernel for Device:%s\n",deviceName);
 	  sprintf(binFileName,"%s_%s.elf",kernelName,deviceName);
@@ -834,7 +877,6 @@ void cleanupCL(void)
 	if(status != CL_SUCCESS) exitOnError("In clReleaseContext\n");
 
 }
-
 
 //Releases program's resources 
 void cleanupHost(void)
@@ -900,6 +942,3 @@ void exitOnError(const char *error_text)
 	exit(1);
 
 }
-
-
-

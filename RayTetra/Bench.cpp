@@ -253,6 +253,7 @@ int main(int argc, char* argv[])
     
     std::cout << "Setting up GPU...  ";
     
+    initializeCL("RayTetraSegura0");
     allocateInput(nTests);
 	
 	 // Converting input to raytetragpu's input format
@@ -292,7 +293,7 @@ int main(int argc, char* argv[])
 
 	}
 		
-    initializeCL("RayTetraSegura0");	     
+	     
     std::cout << "GPU Segura 0...  ";
 
     NpProgramTimer timerGPUSegura0;

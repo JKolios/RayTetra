@@ -149,46 +149,45 @@ int main(int argc, char* argv[])
         //If a GPU algorithm has been selected, initialise the GPU
         if(arguments.gpuNeeded) {
 	  	
-	 allocateInput(nTests);
+		initializeCL(arguments.gpuAlgName);	
+		allocateInput(nTests);
 	
-	 // Converting input to raytetragpu's input format
-	for(int i = 0;i<nTests;i++)
-	{
+		// Converting input to raytetragpu's input format
+		for(int i = 0;i<nTests;i++)
+		{
 
-		vert0[i].s[0] = v[i][0].x;
-		vert0[i].s[1] = v[i][0].y;
-		vert0[i].s[2] = v[i][0].z;	
-		vert0[i].s[3] = 0.0;
+			vert0[i].s[0] = v[i][0].x;
+			vert0[i].s[1] = v[i][0].y;
+			vert0[i].s[2] = v[i][0].z;	
+			vert0[i].s[3] = 0.0;
 
-		vert1[i].s[0] = v[i][1].x;
-		vert1[i].s[1] = v[i][1].y;
-		vert1[i].s[2] = v[i][1].z;	
-		vert1[i].s[3] = 0.0;
+			vert1[i].s[0] = v[i][1].x;
+			vert1[i].s[1] = v[i][1].y;
+			vert1[i].s[2] = v[i][1].z;	
+			vert1[i].s[3] = 0.0;
 
-		vert2[i].s[0] = v[i][2].x;
-		vert2[i].s[1] = v[i][2].y;
-		vert2[i].s[2] = v[i][2].z;	
-		vert2[i].s[3] = 0.0;
+			vert2[i].s[0] = v[i][2].x;
+			vert2[i].s[1] = v[i][2].y;
+			vert2[i].s[2] = v[i][2].z;	
+			vert2[i].s[3] = 0.0;
 
-		vert3[i].s[0] = v[i][3].x;
-		vert3[i].s[1] = v[i][3].y;
-		vert3[i].s[2] = v[i][3].z;	
-		vert3[i].s[3] = 0.0;
+			vert3[i].s[0] = v[i][3].x;
+			vert3[i].s[1] = v[i][3].y;
+			vert3[i].s[2] = v[i][3].z;	
+			vert3[i].s[3] = 0.0;
 
 		
-		origin[i].s[0] = orig[i].x;
-		origin[i].s[1] = orig[i].y; 
-		origin[i].s[2] = orig[i].z; 
-		origin[i].s[3] = 0.0;
+			origin[i].s[0] = orig[i].x;
+			origin[i].s[1] = orig[i].y; 
+			origin[i].s[2] = orig[i].z; 
+			origin[i].s[3] = 0.0;
 
-		dir[i].s[0] = dest[i].x;
-		dir[i].s[1] = dest[i].y;
-		dir[i].s[2] = dest[i].z;
-		dir[i].s[3] = 0.0;
+			dir[i].s[0] = dest[i].x;
+			dir[i].s[1] = dest[i].y;
+			dir[i].s[2] = dest[i].z;
+			dir[i].s[3] = 0.0;
 
-	}
-		
-	initializeCL(arguments.gpuAlgName);	  
+		}
 	}
 
         NpProgramTimer timer;

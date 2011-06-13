@@ -3,12 +3,11 @@
 
 //Provides GPU init and cleanup functions to RayTetra and Bench
 
-//The number of work items launched in every Compute Unit of the target device
-//at a given time.
-#define DEVICE_WORK_ITEMS_PER_WAVEFRONT 64
-
 //The maximum number of work items to use per kernel execution
 #define DEVICE_WORK_ITEMS_PER_LAUNCH 910016
+
+//The maximum number of chars in a device name or binary filename created at runtime
+#define MAX_NAME_LENGTH 256
 
 #include <CL/cl.h>
 
@@ -59,6 +58,10 @@ extern cl_command_queue    commandQueue;
 extern cl_program program;
 
 extern cl_kernel  kernel;
+
+//The number of work items(threads) launched for every work group of the target device
+//64 for AMD, 32 for Nvidia GPUs
+extern cl_int threads_per_group;
 
 //Device Number (for loading a premade binary)
 //Default is 0 (First GPU listed in the platform)

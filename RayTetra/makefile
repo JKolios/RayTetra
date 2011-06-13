@@ -20,3 +20,6 @@ clean:
 
 cleanbak:
 	rm -f *~ ../Common/*~
+
+cleanoutput:
+	rm -f *.txt *.elf *.csv input*

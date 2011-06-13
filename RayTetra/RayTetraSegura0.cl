@@ -13,7 +13,6 @@ __kernel void RayTetraSegura0(
 				__global double2* parametric)
 {
 	uint tid = get_global_id(0);
-
 	//Initialization of output vars
 	int enterface = -1;
 	int leaveface = -1;
