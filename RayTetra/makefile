@@ -7,11 +7,11 @@ all: RandomRayTetra RayTetra RayTetraT Bench BenchT
 
 RandomRayTetra: ../Common/NpVector.o RandomRayTetra.o
 
-RayTetra: ../Common/NpProgramTimer.o ../Common/NpVector.o RayTetraHaines.o RayTetraMoller.o RayTetraSegura.o RayTetraSTP.o RayTetra.o 
+RayTetra: ../Common/NpProgramTimer.o ../Common/NpVector.o RayTetraHaines.o RayTetraMoller.o RayTetraSegura.o RayTetraSTP.o RayTetra.o gpuHandler.o  
 
 RayTetraT: ../Common/NpProgramTimer.o ../Common/NpVector.o RayTetraHainesT.o  RayTetraSeguraT.o RayTetraT.o
 
-Bench: ../Common/NpProgramTimer.o ../Common/NpVector.o RayTetraHaines.o RayTetraMoller.o RayTetraSegura.o RayTetraSTP.o
+Bench: ../Common/NpProgramTimer.o ../Common/NpVector.o RayTetraHaines.o RayTetraMoller.o RayTetraSegura.o RayTetraSTP.o gpuHandler.o
 
 BenchT: ../Common/NpProgramTimer.o ../Common/NpVector.o RayTetraHainesT.o RayTetraSeguraT.o
 

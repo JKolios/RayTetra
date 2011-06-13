@@ -10,6 +10,9 @@
 #include <cstdlib>
 #include <getopt.h>
 
+//GPU init and cleanup functions
+#include "gpuHandler.hpp"
+
 using namespace std;
 
 
@@ -207,7 +210,7 @@ int main(int argc, char* argv[])
         }
     }
     timerSTP0.Stop();
-    resultsFile << timerSTP0.TotalElapsedTime()<< ',';;
+    resultsFile << timerSTP0.TotalElapsedTime()<< ',';
     std::cout << timerSTP0.TotalElapsedTime() << std::endl;
 
 
@@ -243,11 +246,95 @@ int main(int argc, char* argv[])
                                      tEnter, tLeave);
         }
     }
+    	       
     timerSTP2.Stop();
     resultsFile << timerSTP2.TotalElapsedTime();
     std::cout << timerSTP2.TotalElapsedTime() << std::endl;
+    
+    std::cout << "Setting up GPU...  ";
+    
+    allocateInput(nTests);
+	
+	 // Converting input to raytetragpu's input format
+	for(unsigned int i = 0;i<nTests;i++)
+	{
 
+		vert0[i].s[0] = v[i][0].x;
+		vert0[i].s[1] = v[i][0].y;
+		vert0[i].s[2] = v[i][0].z;	
+		vert0[i].s[3] = 0.0;
+
+		vert1[i].s[0] = v[i][1].x;
+		vert1[i].s[1] = v[i][1].y;
+		vert1[i].s[2] = v[i][1].z;	
+		vert1[i].s[3] = 0.0;
+
+		vert2[i].s[0] = v[i][2].x;
+		vert2[i].s[1] = v[i][2].y;
+		vert2[i].s[2] = v[i][2].z;	
+		vert2[i].s[3] = 0.0;
+
+		vert3[i].s[0] = v[i][3].x;
+		vert3[i].s[1] = v[i][3].y;
+		vert3[i].s[2] = v[i][3].z;	
+		vert3[i].s[3] = 0.0;
+
+		
+		origin[i].s[0] = orig[i].x;
+		origin[i].s[1] = orig[i].y; 
+		origin[i].s[2] = orig[i].z; 
+		origin[i].s[3] = 0.0;
+
+		dir[i].s[0] = dest[i].x;
+		dir[i].s[1] = dest[i].y;
+		dir[i].s[2] = dest[i].z;
+		dir[i].s[3] = 0.0;
+
+	}
+		
+    initializeCL("RayTetraSegura0");	     
+    std::cout << "GPU Segura 0...  ";
+
+    NpProgramTimer timerGPUSegura0;
+    timerGPUSegura0.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSegura0.Stop();
+    resultsFile << timerGPUSegura0.TotalElapsedTime()<< ',';
+    std::cout << timerGPUSegura0.TotalElapsedTime() << std::endl;
+    
+    initializeCL("RayTetraSTP0");	     
+    std::cout << "GPU STP 0...  ";
+
+    NpProgramTimer timerGPUSTP0;
+    timerGPUSTP0.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSTP0.Stop();
+    resultsFile << timerGPUSTP0.TotalElapsedTime()<< ',';
+    std::cout << timerGPUSTP0.TotalElapsedTime() << std::endl;
+    
+    initializeCL("RayTetraSTP1");	     
+    std::cout << "GPU STP 1...  ";
+
+    NpProgramTimer timerGPUSTP1;
+    timerGPUSTP1.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSTP1.Stop();
+    resultsFile << timerGPUSTP1.TotalElapsedTime()<< ',';
+    std::cout << timerGPUSTP1.TotalElapsedTime() << std::endl;
+    
+    initializeCL("RayTetraSTP2");	     
+    std::cout << "GPU STP 2...  ";
+
+    NpProgramTimer timerGPUSTP2;
+    timerGPUSTP2.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSTP2.Stop();
+    resultsFile << timerGPUSTP2.TotalElapsedTime();
+    std::cout << timerGPUSTP2.TotalElapsedTime() << std::endl;
+    
+    
     resultsFile << std::endl;
+    
 
     return 0;
 }

@@ -1,45 +1,57 @@
  #!/bin/bash
+
+# Runs intersection tests for the provided number of intersecting and non-intersecting Ray - Tetrahedron pairs.
+# Uses the same input data for all included algorithms and checks for possible differences in output.
+# Uses diff for output comparison.
+# Usage: ./result_compare (Number of intersecting test pairs) (Number of non-intersecting test pairs)
+
+if (($# < 2 ||$# > 2))
+then
+    echo "Usage: ./result_compare (Number of intersecting test pairs) (Number of non-intersecting test pairs)"
+    exit 1
+fi
+
 INTERSECTING=$1
 NONINTERSECTING=$2
 
 rm -f differences.txt
 
+cd RayTetra/
+
 echo "Generating " $1 "intersecting " $2 "non-intersecting test pairs"
-RayTetra/RandomRayTetra test_input.txt -i $INTERSECTING -n $NONINTERSECTING
+./RandomRayTetra test_input.txt -i $INTERSECTING -n $NONINTERSECTING
 
 echo "Testing CPU"
 echo "Haines"
-RayTetra/RayTetra -a 0 -p r test_input.txt outputcpuhaines.txt 1
+./RayTetra -a 0 -p r test_input.txt outputcpuhaines.txt 1
 echo "Moller1"
-RayTetra/RayTetra -m 1 -p r test_input.txt outputcpumoller1.txt 1
+./RayTetra -m 1 -p r test_input.txt outputcpumoller1.txt 1
 echo "Moller2"
-RayTetra/RayTetra -m 2 -p r test_input.txt outputcpumoller2.txt 1
+./RayTetra -m 2 -p r test_input.txt outputcpumoller2.txt 1
 echo "Moller3"
-RayTetra/RayTetra -m 3 -p r test_input.txt outputcpumoller3.txt 1
+./RayTetra -m 3 -p r test_input.txt outputcpumoller3.txt 1
 echo "Segura0"
-RayTetra/RayTetra -s 0 -p r test_input.txt outputcpusegura0.txt 1
+./RayTetra -s 0 -p r test_input.txt outputcpusegura0.txt 1
 echo "Segura1"
-RayTetra/RayTetra -s 1 -p r test_input.txt outputcpusegura1.txt 1
+./RayTetra -s 1 -p r test_input.txt outputcpusegura1.txt 1
 echo "Segura2"
-RayTetra/RayTetra -s 2 -p r test_input.txt outputcpusegura2.txt 1
+./RayTetra -s 2 -p r test_input.txt outputcpusegura2.txt 1
 echo "STP0"
-RayTetra/RayTetra -t 0 -p r test_input.txt outputcpustp0.txt 1
+./RayTetra -t 0 -p r test_input.txt outputcpustp0.txt 1
 echo "STP1"
-RayTetra/RayTetra -t 1 -p r test_input.txt outputcpustp1.txt 1
+./RayTetra -t 1 -p r test_input.txt outputcpustp1.txt 1
 echo "STP2"
-RayTetra/RayTetra -t 2 -p r test_input.txt outputcpustp2.txt 1
+./RayTetra -t 2 -p r test_input.txt outputcpustp2.txt 1
 
-cd raytetragpu/
 echo "Testing GPU"
 echo "Segura0"
-./RayTetraGPU 0 ../test_input.txt ../outputgpusegura0.txt
+./RayTetra -g 0 -p r test_input.txt outputgpusegura0.txt 1
 echo "STP0"
-./RayTetraGPU 1 ../test_input.txt ../outputgpustp0.txt
+./RayTetra -g 1 -p r test_input.txt outputgpustp0.txt 1
 echo "STP1"
-./RayTetraGPU 2 ../test_input.txt ../outputgpustp1.txt
+./RayTetra -g 2 -p r test_input.txt outputgpustp1.txt 1
 echo "STP2"
-./RayTetraGPU 3 ../test_input.txt ../outputgpustp2.txt
-cd ..
+./RayTetra -g 3 -p r test_input.txt outputgpustp2.txt 1
 
 echo "Printing comparison to differences.txt"
 echo -e "CPU Haines - CPU Moller1\n">> differences.txt

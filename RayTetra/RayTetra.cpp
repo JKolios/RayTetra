@@ -3,7 +3,7 @@
 #include "../Common/NpProgramTimer.hpp"
 #include "../Common/NpCArrayAdapter.hpp"
 //GPU init and cleanup functions
-#include "gpuHandler.cpp"
+#include "gpuHandler.hpp"
 
 #include <iostream>
 #include <vector>
