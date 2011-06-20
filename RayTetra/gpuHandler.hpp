@@ -61,7 +61,11 @@ extern cl_kernel  kernel;
 
 //The number of work items(threads) launched for every work group of the target device
 //64 for AMD, 32 for Nvidia GPUs
-extern cl_int threads_per_group;
+extern cl_int threadsPerGroup;
+
+//Device Name string
+//Used to select between precompiled kernels
+extern char deviceName[];
 
 //Device Number (for loading a premade binary)
 //Default is 0 (First GPU listed in the platform)
@@ -74,7 +78,10 @@ extern cl_int status;
 //Function Declarations
 
 //CL environment init
-void initializeCL(const char*);
+void initializeCL();
+
+//Kernel Compilation or Binary Loading
+void makeCLKernel(const char*);
 
 //Input Processing
 void allocateInput(int);

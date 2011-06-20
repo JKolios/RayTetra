@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
     
     std::cout << "Setting up GPU...  ";
     
-    initializeCL("RayTetraSegura0");
+    initializeCL();
     allocateInput(nTests);
 	
 	 // Converting input to raytetragpu's input format
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
 
 	}
 		
-	     
+    makeCLKernel("RayTetraSegura0");	     
     std::cout << "GPU Segura 0...  ";
 
     NpProgramTimer timerGPUSegura0;
@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
     resultsFile << timerGPUSegura0.TotalElapsedTime()<< ',';
     std::cout << timerGPUSegura0.TotalElapsedTime() << std::endl;
     
-    initializeCL("RayTetraSTP0");	     
+    makeCLKernel("RayTetraSTP0");	     
     std::cout << "GPU STP 0...  ";
 
     NpProgramTimer timerGPUSTP0;
@@ -313,7 +313,7 @@ int main(int argc, char* argv[])
     resultsFile << timerGPUSTP0.TotalElapsedTime()<< ',';
     std::cout << timerGPUSTP0.TotalElapsedTime() << std::endl;
     
-    initializeCL("RayTetraSTP1");	     
+    makeCLKernel("RayTetraSTP1");	     
     std::cout << "GPU STP 1...  ";
 
     NpProgramTimer timerGPUSTP1;
@@ -323,7 +323,7 @@ int main(int argc, char* argv[])
     resultsFile << timerGPUSTP1.TotalElapsedTime()<< ',';
     std::cout << timerGPUSTP1.TotalElapsedTime() << std::endl;
     
-    initializeCL("RayTetraSTP2");	     
+    makeCLKernel("RayTetraSTP2");	     
     std::cout << "GPU STP 2...  ";
 
     NpProgramTimer timerGPUSTP2;

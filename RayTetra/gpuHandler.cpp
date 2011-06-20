@@ -24,7 +24,7 @@
 //Actual Ray-Tetrahedron pairs processed. 
  cl_uint actual_width;
 
-//actual_width padded to a multiple of threads_per_group
+//actual_width padded to a multiple of threadsPerGroup
  cl_uint padded_width;
 
 //The width of the input and output buffers used
@@ -55,11 +55,15 @@
  
 //The number of work items(threads) launched for every work group of the target device
 //64 for AMD, 32 for Nvidia GPUs, ignored for CPUs
-cl_int threads_per_group = 1;
+cl_int threadsPerGroup = 1;
 
 //Device Number (for loading a premade binary)
 //Default is 0 (First GPU listed in the platform)
  cl_int deviceNum = 0;
+ 
+ //Device Name string
+//Used to select between precompiled kernels
+char deviceName[MAX_NAME_LENGTH];
 
 //Return codes from OpenCL API calls
 //Used for error tracking
@@ -78,7 +82,7 @@ void runCLKernels(void)
 	size_t localThreads[1];
 	
 	
-	localThreads[0]= threads_per_group;  
+	localThreads[0]= threadsPerGroup;  
 	
 	//Create Input/Output buffers
 	
@@ -524,8 +528,8 @@ void allocateInput(int actual_width)
 {
 	
 	//Determine the amount of false entries to pad the input arrays with.
-	//Create a workgroup size of threads_per_group 
-	if((actual_width % threads_per_group) != 0) padded_width = actual_width + (threads_per_group - (actual_width % threads_per_group));
+	//Create a workgroup size of threadsPerGroup 
+	if((actual_width % threadsPerGroup) != 0) padded_width = actual_width + (threadsPerGroup - (actual_width % threadsPerGroup));
 	else padded_width = actual_width;
 		
 	//Input Arrays
@@ -559,9 +563,9 @@ void allocateInput(int actual_width)
 	
 }
 
-/*
-* Converts the contents of a file into a string
-*/
+
+//Converts the contents of a file into a string
+//Used to feed kernel source code to the OpenCL Compiler
 std::string convertToString(const char *filename)
 {
 	size_t size;
@@ -595,14 +599,10 @@ std::string convertToString(const char *filename)
 	return "NULL";
 }
 
-/*
-* 	  OpenCL related initialization 
-*        Create Context, Device list, Command Queue
-*        Create OpenCL memory buffer objects
-*        Load CL file, compile, link CL source 
-*		  Build program and kernel objects
-*/
-void initializeCL(const char *kernelName)
+
+//OpenCL related initialization 
+//Create Context, Device list, Command Queue
+void initializeCL()
 {
 	size_t deviceListSize;
 	//Identify available platforms and select one
@@ -617,7 +617,7 @@ void initializeCL(const char *kernelName)
 		if(status != CL_SUCCESS) exitOnError("Getting Platform Ids. (clGetPlatformsIDs)");
 		for(cl_uint i=0; i < numPlatforms; ++i)
 		{
-			char pbuff[100];
+			char pbuff[MAX_NAME_LENGTH];
 			status = clGetPlatformInfo(
 				platforms[i],
 				CL_PLATFORM_VENDOR,
@@ -637,9 +637,7 @@ void initializeCL(const char *kernelName)
 	}
 	if(NULL == platform) exitOnError(" NULL platform found.");
 
-
 	cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
-
 
 	// Create an OpenCL context
 	context = clCreateContextFromType(cps, 
@@ -678,26 +676,37 @@ void initializeCL(const char *kernelName)
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Creating Command Queue. (clCreateCommandQueue).");
 	
-	//Kernel Loading/Compilation	
-	
 	//Identify the target device
-	char binFileName[MAX_NAME_LENGTH];
-	char deviceName[MAX_NAME_LENGTH];
+
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_NAME,MAX_NAME_LENGTH,deviceName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number(clGetDeviceInfo)");
 	
-	//Identify the device's vendor (used to set threads_per_group)
+	//Identify the device's vendor (used to set threadsPerGroup)
 	char deviceVendorName[MAX_NAME_LENGTH];
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH,deviceVendorName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device vendor's name for given device number(clGetDeviceInfo)");
 	
-	if(!strcmp(deviceVendorName, "Advanced Micro Devices, Inc.")) threads_per_group = 64;
-	if(!strcmp(deviceVendorName, "NVIDIA Corporation")) threads_per_group = 32;
-	
+	if(!strcmp(deviceVendorName, "Advanced Micro Devices, Inc.")) threadsPerGroup = 64;
+	if(!strcmp(deviceVendorName, "NVIDIA Corporation")) threadsPerGroup = 32;
+
+  
+}
+
+
+//Load CL file, compile, link CL source
+//Try to find a precompiled binary
+//Build program and kernel objects	
+void makeCLKernel(const char *kernelName)
+{
+	//Kernel Loading/Compilation		
 	printf("Using Device:%s\n",deviceName);
+	
+	//Attempt to load precompiled bianry file for target device
+	char binFileName[MAX_NAME_LENGTH];
 	sprintf(binFileName,"%s_%s.elf",kernelName,deviceName);
 	std::fstream inBinFile(binFileName, (ios::in|ios::binary|ios::ate));
 	
+	//Compile
 	if(inBinFile.fail()) {
 		inBinFile.close();	
 		printf("No binary image found for specified kernel and device,compiling a new one.\n");
@@ -803,11 +812,13 @@ void initializeCL(const char *kernelName)
 
 void dumpBinary(cl_program program,const char * kernelName)
 {
- 	//Extract binary file
+ 	//Dump a compiled kernel to a binary file
+	//Get number of devices
 	cl_uint deviceCount = 0;
 	status = clGetProgramInfo(program,CL_PROGRAM_NUM_DEVICES,sizeof(cl_uint),&deviceCount,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting number of devices for the program(clGetProgramInfo)");
 
+	//Get sizes of compiled binaries for said devices
 	size_t *binSize = (size_t*)malloc(sizeof(size_t)*deviceCount);
 	status = clGetProgramInfo(program,CL_PROGRAM_BINARY_SIZES,sizeof(binSize),binSize,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting binary sizes for the program(clGetProgramInfo)");
@@ -815,9 +826,11 @@ void dumpBinary(cl_program program,const char * kernelName)
 	char **bin = ( char**)malloc(sizeof(char*)*deviceCount);
 	for(cl_uint i = 0;i<deviceCount;i++) bin[i] = (char*)malloc(binSize[i]);
 
+	//Retrive compiled binaries
 	status = clGetProgramInfo(program,CL_PROGRAM_BINARIES,sizeof(binSize),bin,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting program binaries(clGetProgramInfo)");
 
+	//Export binaries to files, appending CL_DEVICE_NAME to each filename
 	char binFileName[MAX_NAME_LENGTH];
 	for(cl_uint i = 0;i<deviceCount;i++)
 	{
@@ -878,6 +891,7 @@ void cleanupCL(void)
 
 }
 
+
 //Releases program's resources 
 void cleanupHost(void)
 {
@@ -935,10 +949,11 @@ void cleanupHost(void)
 
 }
 
+
 void exitOnError(const char *error_text)
 {
-	printf("Error:%s\n",error_text);
-	printf("CL Status:%d\n",status);
+	fprintf(stderr,"Error:%s\n",error_text);
+	fprintf(stderr,"CL Status:%d\n",status);
 	exit(1);
 
 }

@@ -149,7 +149,8 @@ int main(int argc, char* argv[])
         //If a GPU algorithm has been selected, initialise the GPU
         if(arguments.gpuNeeded) {
 	  	
-		initializeCL(arguments.gpuAlgName);	
+		initializeCL();
+		makeCLKernel(arguments.gpuAlgName);
 		allocateInput(nTests);
 	
 		// Converting input to raytetragpu's input format
@@ -306,7 +307,8 @@ int main(int argc, char* argv[])
 
 
 		
-	initializeCL(arguments.gpuAlgName);	  
+	initializeCL();
+	makeCLKernel(arguments.gpuAlgName);
 	}
 	
 	if(arguments.gpuNeeded){  
