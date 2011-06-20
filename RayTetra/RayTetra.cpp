@@ -152,6 +152,7 @@ int main(int argc, char* argv[])
 		initializeCL();
 		makeCLKernel(arguments.gpuAlgName);
 		allocateInput(nTests);
+		allocateBuffers();
 	
 		// Converting input to raytetragpu's input format
 		for(int i = 0;i<nTests;i++)
@@ -199,7 +200,6 @@ int main(int argc, char* argv[])
 	    runCLKernels();	    
 	    for(int j=0;j < nTests;++j)
 	    {
-	      //cout << cartesian[j].s[0] << " " << cartesian[j].s[1]<<endl;
 	      result[j] = true ? ((cartesian[j].s[0] != -1) &&(cartesian[j].s[1] != -1)) : false;
 	      if(result[j])
 	      {
@@ -216,6 +216,7 @@ int main(int argc, char* argv[])
 		  tLeave[j] = parametric[j].s[1];
 	      
 	    }
+	    
 	}
 	    	    
 	  }else{
@@ -232,7 +233,6 @@ int main(int argc, char* argv[])
             }
         }
         timer.Stop();
-        
 
         if ((arguments.print == 1)  ||  (arguments.print == 3))  {
             resultsFile << timer.TotalElapsedTime() << std::endl;

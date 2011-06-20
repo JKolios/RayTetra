@@ -255,6 +255,7 @@ int main(int argc, char* argv[])
     
     initializeCL();
     allocateInput(nTests);
+    allocateBuffers();
 	
 	 // Converting input to raytetragpu's input format
 	for(unsigned int i = 0;i<nTests;i++)

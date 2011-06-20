@@ -3,9 +3,9 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "gpuHandler.hpp"
-
 #include <CL/cl.h>
+
+#include "gpuHandler.hpp"
 
 //Input data is stored here.
  cl_double4 *origin;//Ray Origin
@@ -61,7 +61,7 @@ cl_int threadsPerGroup = 1;
 //Default is 0 (First GPU listed in the platform)
  cl_int deviceNum = 0;
  
- //Device Name string
+//Device Name string
 //Used to select between precompiled kernels
 char deviceName[MAX_NAME_LENGTH];
 
@@ -80,90 +80,9 @@ void runCLKernels(void)
 	
 	size_t globalThreads[1];
 	size_t localThreads[1];
-	
-	
+		
 	localThreads[0]= threadsPerGroup;  
-	
-	//Create Input/Output buffers
-	
-	buffer_width = (padded_width <= DEVICE_WORK_ITEMS_PER_LAUNCH) ? padded_width:DEVICE_WORK_ITEMS_PER_LAUNCH;
-
-	// Create OpenCL memory buffers
-	//Input buffers
-	orig_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(orig)"); 
-
-	dir_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(dir)"); 
-
-
-	vert0_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert0)"); 
-
-	vert1_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert1)");
-
-	vert2_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert2)"); 
-
-	vert3_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert3)"); 
-
-	//Output buffers
-	cartesian_buf = clCreateBuffer(
-		context, 
-		CL_MEM_WRITE_ONLY,
-		sizeof(cl_double8) * buffer_width,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(cartesian_buf)");
-
-	barycentric_buf = clCreateBuffer(
-	  context, 
-	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double4) * buffer_width,
-	  NULL, 
-	  &status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(barycentric_buf)");
-
-	parametric_buf = clCreateBuffer(
-	  context, 
-	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double2) * buffer_width,
-	  NULL, 
-	  &status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");
-	
+		
 	//Assign the buffers as kernel arguments
 	status = clSetKernelArg(
 		kernel, 
@@ -311,7 +230,6 @@ void runCLKernels(void)
 	
 	  //Enqueue a kernel run call.	
 	  globalThreads[0] = DEVICE_WORK_ITEMS_PER_LAUNCH;
-	  //printf("Running kernel with work_items:%zu \n",globalThreads[0]);
 	  status = clEnqueueNDRangeKernel(
 		  commandQueue,
 		  kernel,
@@ -563,6 +481,91 @@ void allocateInput(int actual_width)
 	
 }
 
+void allocateBuffers(void)
+{
+	//Create Input/Output buffers
+
+	buffer_width = (padded_width <= DEVICE_WORK_ITEMS_PER_LAUNCH) ? padded_width:DEVICE_WORK_ITEMS_PER_LAUNCH;
+
+	// Create OpenCL memory buffers
+	//Input buffers
+	orig_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(orig)"); 
+
+	dir_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(dir)"); 
+
+
+	vert0_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert0)"); 
+
+	vert1_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert1)");
+
+	vert2_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert2)"); 
+
+	vert3_buf = clCreateBuffer(
+		context, 
+		CL_MEM_READ_ONLY,
+		sizeof(cl_double4) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert3)"); 
+
+	//Output buffers
+	cartesian_buf = clCreateBuffer(
+		context, 
+		CL_MEM_WRITE_ONLY,
+		sizeof(cl_double8) * buffer_width,
+		NULL, 
+		&status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(cartesian_buf)");
+
+	barycentric_buf = clCreateBuffer(
+	  context, 
+	  CL_MEM_WRITE_ONLY,
+	  sizeof(cl_double4) * buffer_width,
+	  NULL, 
+	  &status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(barycentric_buf)");
+
+	parametric_buf = clCreateBuffer(
+	  context, 
+	  CL_MEM_WRITE_ONLY,
+	  sizeof(cl_double2) * buffer_width,
+	  NULL, 
+	  &status);
+	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");
+
+  
+}
+
 
 //Converts the contents of a file into a string
 //Used to feed kernel source code to the OpenCL Compiler
@@ -686,10 +689,9 @@ void initializeCL()
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH,deviceVendorName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device vendor's name for given device number(clGetDeviceInfo)");
 	
-	if(!strcmp(deviceVendorName, "Advanced Micro Devices, Inc.")) threadsPerGroup = 64;
-	if(!strcmp(deviceVendorName, "NVIDIA Corporation")) threadsPerGroup = 32;
-
-  
+	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerGroup = 64;
+	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerGroup = 32;
+ 
 }
 
 
@@ -946,7 +948,7 @@ void cleanupHost(void)
 		free(devices);
 		devices = NULL;
 	}
-
+	
 }
 
 

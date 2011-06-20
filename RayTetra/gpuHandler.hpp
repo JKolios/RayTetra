@@ -86,6 +86,9 @@ void makeCLKernel(const char*);
 //Input Processing
 void allocateInput(int);
 
+//Input/output buffer allocation
+void allocateBuffers(void);
+
 //Execute kernels on OpenCL Device
 void runCLKernels(void);
 
