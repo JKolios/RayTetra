@@ -1,0 +1,460 @@
+true   2 3   1.89748 0.193096 1.20205   -2.33607 3.65387 -1.8297   0.915331 0.0532228   0.717318 0.0400267   0.771937 0.968004
+true   1 2   4.12099 -0.063662 -2.37528   3.4132 -0.263663 -3.46419   0.487683 0.512317   0.364656 0.526674   0.345405 0.400081
+false
+false
+true   3 2   3.41698 1.43068 8.98505   -2.0882 -2.72159 6.80988   0.910967 0.0429723   0.21587 0.745394   0.243863 0.54927
+true   0 3   3.72338 -3.26061 2.22559   -3.09973 0.0169614 0.261165   0.103171 0.113067   0.495441 0.383703   0.0145185 0.109734
+true   2 0   5.26097 -7.36453 4.50085   -1.41011 -3.4989 0.226363   0.950102 0.00262206   0.521563 0.0843055   0.458419 0.518742
+false
+true   2 0   4.3417 -2.1304 -3.80832   0.962458 -8.17795 -3.40673   0.385985 0.395467   1.71977e-07 0.493391   0.404286 0.573318
+false
+false
+true   2 0   -2.04767 2.15489 2.88156   -2.21565 -1.97787 0.0862334   0.621822 0.0154541   0.413984 0.407858   0.306536 0.400547
+false
+false
+true   1 3   2.8024 5.14977 1.25328   7.61361 7.49622 -2.20848   0.4924 0.235354   0.848944 0.0749208   0.716566 0.81764
+true   1 3   5.48229 -0.411536 1.99918   -5.83173 -5.00297 4.24409   0.90849 0.0569282   0.836835 0.133493   0.53672 0.643228
+true   3 2   -6.91058 -3.43895 -5.47665   -6.30936 -1.84059 -4.42893   0.265457 0.483863   0.761781 0.116113   0.461575 0.516345
+true   3 0   4.23384 -0.474337 1.82853   -4.83833 -0.652819 1.67043   0.410771 0.00324832   0.783291 0.167829   0.766925 0.875498
+true   2 3   5.89251 -1.04964 -5.87733   -4.71981 -2.22397 -1.30992   0.131708 0.044729   0.0533343 0.433307   0.216703 0.315605
+false
+false
+true   1 2   -3.05961 -6.56744 0.720428   -2.38534 -7.80571 2.3367   0.260465 0.480466   0.552316 0.411691   0.2566 0.338304
+false
+true   3 0   2.10322 0.146796 0.871455   1.66076 -5.24341 -2.32729   0.157139 0.42435   0.828958 0.115566   0.247662 0.506097
+false
+false
+true   1 0   2.57718 -4.33939 1.78602   1.67313 -6.97876 0.733174   0.406767 0.0103565   0.717604 0.162031   0.215068 0.330054
+true   1 3   2.91975 -7.73234 -8.29334   -4.16031 -4.82397 1.72808   0.952664 0.0449211   0.899088 0.0773981   0.511391 0.588127
+false
+false
+false
+false
+true   3 0   -2.15275 -1.33869 -0.222288   3.12716 -4.85875 -2.64005   0.523537 0.0957689   0.661794 0.236675   0.404633 0.464808
+true   2 0   -3.47662 5.26312 3.68208   -5.289 0.24288 3.59261   0.101455 0.141324   0.244152 0.102896   0.722198 0.897973
+false
+false
+true   1 0   0.183533 -8.07752 -4.69021   -1.57798 -1.30073 -1.01024   0.0238766 0.00495584   0.487254 0.150172   0.240733 0.323247
+false
+false
+false
+false
+true   1 0   2.07739 -1.75234 -5.35681   0.987827 4.4794 1.49784   0.807946 0.0743813   0.747285 0.236089   0.139282 0.231687
+true   2 3   2.61464 -8.96229 3.14165   0.950498 -6.21804 3.2535   0.204595 2.17063e-06   0.527267 0.217342   0.428514 0.636095
+false
+true   1 2   0.827618 -7.06837 1.63397   -1.6134 -5.59724 -5.72546   0.100684 0.292924   0.869442 0.0793273   0.497236 0.552741
+true   1 0   -0.701955 -0.246685 4.38858   0.295288 -2.68469 -0.5485   0.246069 0.434808   0.30117 0.0881086   0.301616 0.421995
+true   0 3   -3.56467 -4.22958 -5.99198   -3.40772 7.11552 -8.09593   0.775058 0.0254108   0.861267 0.0287525   0.00904172 0.164825
+false
+false
+true   1 2   -6.26801 -0.258066 2.56815   -3.3322 5.49777 -6.15601   0.745048 0.247315   0.958438 0.00398197   0.864839 0.9531
+false
+false
+true   3 0   4.24566 -0.160249 -0.305238   5.67731 -1.09111 2.51666   0.264622 0.589058   0.291061 0.131882   0.359912 0.493066
+false
+false
+true   0 1   2.52836 -2.50376 1.88506   5.01415 -1.73716 5.0927   0.212269 0.303481   0.777827 0.0288062   0.80115 0.882329
+true   1 3   0.720343 -4.45859 -4.37277   -1.60165 4.68876 1.93384   0.880748 0.0763319   0.266427 0.157525   0.568311 0.647027
+true   1 3   1.02982 -2.00936 6.09584   7.71795 1.81448 3.68704   0.0788079 0.921192   0.788939 7.62604e-07   0.0608021 0.597319
+false
+false
+true   0 1   7.83564 0.473797 3.13748   2.27077 -5.85346 0.321548   0.0350465 0.624846   0.478871 0.371665   0.529277 0.657491
+true   2 0   7.45835 -3.2997 4.22735   3.35089 -3.64984 0.641184   0.0826149 0.130552   0.769424 0.228206   0.461066 0.523104
+false
+false
+false
+true   2 3   3.29968 -3.92204 -5.10014   -0.301713 -2.20742 0.718456   0.526374 0.186884   0.989473 0.00560531   0.406856 0.47933
+false
+true   1 3   -2.92035 4.71987 5.77697   -6.74089 7.41234 3.97005   0.0866034 0.266898   0.749283 0.118841   0.13353 0.229317
+false
+true   0 1   1.91605 0.481766 8.41538   -1.63836 -0.240123 1.6637   0.0502697 0.0198153   0.479446 0.203164   0.378893 0.464717
+true   1 3   -6.81379 3.71929 -3.72861   -8.97881 -3.47364 5.25488   0.756141 0.0125929   0.99235 0.00177371   0.415019 0.513528
+true   3 1   -1.4898 1.79189 0.107727   0.742724 4.44877 -0.629339   0.265818 0.532849   0.590648 0.128349   0.301753 0.368455
+false
+true   3 2   -3.8058 -2.47977 7.41071   -0.314221 -3.36916 3.86255   0.376634 0.39294   0.302222 0.197566   0.177955 0.374652
+true   2 3   -4.94759 2.11148 3.26486   3.6059 3.04747 2.37173   0.129044 2.68383e-07   0.311474 0.424554   0.00497246 0.594991
+false
+false
+false
+false
+true   3 2   4.08131 2.7659 -5.24951   0.724806 1.84567 -7.26184   0.271572 0.728427   1.02698e-06 0.711768   0.39261 0.467339
+true   3 2   -8.20544 0.497039 1.44007   4.45629 4.19698 0.278966   0.507558 0.490997   0.748544 0.0893968   0.110541 0.724
+true   2 3   -5.78075 0.467769 -0.710233   -4.86138 -4.1741 -2.08864   0.602019 0.233967   0.29531 0.434045   0.874939 0.965608
+true   2 0   6.433 4.84166 5.48001   8.45423 1.28622 -0.183591   0.120243 0.191171   0.271467 0.340611   0.279802 0.366715
+false
+true   2 1   2.46313 -1.89915 -1.18322   4.61972 4.37574 6.19341   0.112984 0.355284   0.735726 0.0199825   0.531583 0.605939
+true   0 1   -1.36025 -3.40957 -1.74034   -1.89459 -5.3076 -2.18225   0.199938 0.204077   0.576553 0.32733   0.569724 0.633077
+false
+true   1 2   3.74301 -7.36017 7.75721   4.03966 -3.21962 -3.94894   0.0185505 0.0171919   0.204187 0.666312   0.473162 0.528637
+true   0 2   -1.74753 6.33409 5.33956   -1.73952 6.55621 4.99875   0.0364269 0.96357   0.0588119 2.78379e-06   0.594679 0.676884
+false
+true   0 2   0.886345 5.5658 -0.718544   9.67641 -7.70987 -3.31047   0.169751 0.353596   0.971005 0.0071909   0.662814 0.807896
+false
+false
+true   3 1   -5.24027 -3.39429 0.840014   2.37531 -1.60629 -5.93053   0.158015 0.75216   0.680173 0.23947   0.147115 0.524466
+false
+true   0 3   -8.34147 1.61993 -2.54116   -5.14654 3.81969 -1.17418   0.581681 0.327815   0.0654945 0.736011   0.382521 0.535495
+false
+true   2 3   -6.79077 -4.01665 1.89506   1.4699 1.64428 0.714023   0.138668 0.646353   0.650057 0.233616   0.513416 0.571063
+false
+false
+true   2 0   -1.10625 1.9984 -3.45773   -3.66066 -2.47435 1.98442   0.800709 0.0258556   0.179138 0.479483   0.773475 0.913248
+true   3 1   3.98939 -2.14486 5.55494   -1.81849 -6.75612 -7.50954   2.00325e-06 0.344286   0.871457 0.0536378   -0.866307 0.357753
+true   3 2   3.05275 -5.908 4.38365   3.76106 -5.77666 4.87552   0.49431 0.206528   0.529925 0.139605   0.512649 0.575892
+false
+false
+false
+false
+true   2 1   5.66366 -0.46923 2.88494   0.951072 -4.49145 5.8127   0.780257 0.076691   0.770672 0.193379   0.295479 0.363231
+false
+false
+false
+false
+false
+false
+true   3 2   4.41798 1.86938 -2.48661   3.17537 2.5872 -3.76765   0.208177 0.187289   0.665822 0.122571   0.190732 0.490214
+true   0 2   -4.97619 0.580105 -0.599101   -2.14002 -1.08217 8.18149   0.662883 0.204674   0.10163 0.877649   0.0977247 0.200563
+false
+false
+true   0 1   -2.16591 -2.11904 4.55962   -5.91253 -0.817734 3.83271   0.511931 0.0500189   0.804506 0.085853   0.19694 0.622143
+true   3 0   -3.37434 1.05878 -0.337854   3.27106 -1.33589 4.30331   0.995299 0.00424798   0.748343 0.0155178   0.0235131 0.130938
+false
+true   0 2   -2.39024 6.00564 0.682601   -3.14821 5.9688 1.16744   0.975488 0.00303234   0.131246 0.753204   0.642331 0.732901
+false
+true   3 1   -1.77643 0.186003 6.32517   -3.14076 -9.0581 2.28759   0.559906 0.388607   0.524882 0.212212   0.690614 0.773264
+true   2 1   -0.637314 8.5115 -0.850837   1.79957 6.26136 -3.86856   0.466858 0.210987   0.36164 0.0183535   0.450523 0.53757
+false
+false
+true   0 3   -0.220142 -3.98593 -0.847525   -6.23765 1.83406 1.59635   0.523785 0.391112   0.960946 0.00437557   0.465027 0.52088
+true   3 0   -1.48921 -5.31661 3.81124   6.20179 -8.51027 -1.37488   0.113537 0.304437   0.798286 0.0560553   0.679276 0.749625
+false
+false
+false
+false
+true   0 1   7.4353 5.12534 -3.40303   9.61621 4.91786 -3.13204   0.465388 0.248172   0.258413 0.122105   0.484318 0.534551
+true   0 3   -7.58799 -3.50953 -5.24422   1.79582 -1.35632 -5.17539   8.15861e-06 0.167702   0.231704 9.15746e-06   0.717568 0.832898
+false
+true   1 3   -2.51939 1.32118 -4.456   -5.02461 -7.42051 4.55802   0.313882 0.329901   0.93944 0.0140121   0.618248 0.742187
+true   3 0   5.3879 -0.0447027 -1.37258   2.85056 -5.62102 0.685868   0.270791 0.543396   0.144832 0.424315   0.231379 0.327873
+false
+false
+true   1 3   6.48524 4.19401 5.56905   3.26503 0.666968 6.90387   0.596194 0.131808   0.000765827 0.796725   0.192115 0.383864
+true   1 3   6.30793 -3.96898 -3.57827   2.69008 -7.1945 1.47211   2.84113e-07 0.464967   0.596943 0.179132   -0.0161691 0.12467
+false
+false
+false
+false
+false
+true   0 2   7.74288 0.161146 -7.99143   1.13961 -4.46953 -2.41173   0.829749 0.156306   0.338212 0.436718   0.312421 0.40524
+false
+true   2 3   3.56584 0.0616241 2.15635   4.35552 2.87919 -0.389663   0.678269 0.124312   0.510401 0.142189   0.8293 0.913784
+false
+false
+true   2 0   2.23276 -3.00011 3.16744   8.11087 2.52647 -4.06764   0.522077 0.19349   0.823017 0.104937   0.754302 0.856756
+false
+false
+true   2 0   -2.94443 -2.07804 0.370551   -0.893322 0.444766 2.41353   0.290121 0.316283   0.25821 0.457967   0.417346 0.492552
+false
+true   2 1   1.89617 2.44651 3.13521   4.95889 -0.472556 -2.46789   0.0316138 0.112078   0.258366 0.722379   0.362481 0.445323
+false
+true   1 0   8.91347 -0.942297 -6.64328   6.62586 -1.20716 -1.76877   0.0437722 0.0704587   0.46456 0.253927   0.46936 0.668029
+false
+false
+false
+false
+false
+false
+false
+false
+true   0 1   3.20523 4.90172 9.36721   5.97317 2.55073 9.0592   0.669871 0.0920773   0.122178 0.181217   0.443776 0.520827
+false
+true   2 1   -3.50064 5.61171 1.4806   -3.93912 3.24909 1.34152   0.712244 0.0616987   0.428721 0.463627   0.397338 0.498142
+true   1 2   0.358682 -3.83738 3.37226   -2.88646 -2.79478 1.4465   0.319626 2.95148e-06   2.95187e-06 0.400204   0.333706 0.418322
+false
+false
+true   3 1   0.60388 -1.5742 2.51438   -3.24164 -3.7898 -0.250935   0.214019 0.521168   0.0424365 0.69887   0.627865 0.69924
+false
+true   1 0   -3.01362 0.624106 1.05304   -9.35907 4.39444 8.20097   0.998554 0.0014455   0.900111 0.0666273   0.327302 0.493089
+true   1 3   -5.29306 -5.83788 -5.64609   -5.68031 1.52596 -1.27169   1.34245e-06 0.107369   0.211501 0.301671   0.823888 0.917021
+true   3 0   3.23731 0.634784 -0.466658   -2.63115 -4.30242 -4.32786   0.289515 0.172815   0.454649 0.4444   0.144385 0.317052
+true   3 0   -3.70609 -6.65885 8.98178   -5.71935 7.03631 6.59884   0.914528 0.0098624   0.253803 0.121375   0.613941 0.867112
+true   1 0   -7.31733 0.0951006 -7.69953   -7.01267 3.53996 -2.3512   0.359981 0.246869   0.231851 0.494215   0.476732 0.554299
+false
+false
+true   3 0   0.00542521 8.2951 -1.04999   1.8429 5.71345 -1.57663   0.984301 0.008162   0.325778 0.641178   0.168529 0.255821
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
+CPU Haines - CPU Moller1
+Files .txt and .txt are identical
+CPU Moller1 - CPU Moller2
+Files .txt and .txt are identical
+CPU Moller2 - CPU Moller3
+Files .txt and .txt are identical
+CPU Moller1 - CPU Segura0
+Files .txt and .txt are identical
+CPU Segura0 - CPU Segura1
+Files .txt and .txt are identical
+CPU Segura1 - CPU Segura2
+Files .txt and .txt are identical
+CPU Segura0 - CPU STP0
+Files .txt and .txt are identical
+CPU STP0 - CPU STP1
+Files .txt and .txt are identical
+CPU STP1 - CPU STP2
+Files .txt and .txt are identical
+CPU Segura0 - GPU Segura0
+Files .txt and .txt are identical
+CPU STP0 - GPU STP0
+Files .txt and .txt are identical
+CPU STP1 - GPU STP1
+Files .txt and .txt are identical
+CPU STP2 - GPU STP2
+Files .txt and .txt are identical
