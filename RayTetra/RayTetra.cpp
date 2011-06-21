@@ -270,72 +270,67 @@ int main(int argc, char* argv[])
         
         dataFile >> v[0] >> v[1] >> v[2] >> v[3] >> orig >> dest;
 	
-	if(arguments.gpuNeeded) {
-	  	
-	 allocateInput(1);
+		if(arguments.gpuNeeded) {
+			initializeCL();
+			makeCLKernel(arguments.gpuAlgName);
+			allocateInput(1);
+			allocateBuffers();
 
-	vert0[0].s[0] = v[0].x;
-	vert0[0].s[1] = v[0].y;
-	vert0[0].s[2] = v[0].z;	
-	vert0[0].s[3] = 0.0;
+			vert0[0].s[0] = v[0].x;
+			vert0[0].s[1] = v[0].y;
+			vert0[0].s[2] = v[0].z;	
+			vert0[0].s[3] = 0.0;
 
-	vert1[0].s[0] = v[1].x;
-	vert1[0].s[1] = v[1].y;
-	vert1[0].s[2] = v[1].z;	
-	vert1[0].s[3] = 0.0;
+			vert1[0].s[0] = v[1].x;
+			vert1[0].s[1] = v[1].y;
+			vert1[0].s[2] = v[1].z;	
+			vert1[0].s[3] = 0.0;
 
-	vert2[0].s[0] = v[2].x;
-	vert2[0].s[1] = v[2].y;
-	vert2[0].s[2] = v[2].z;	
-	vert2[0].s[3] = 0.0;
+			vert2[0].s[0] = v[2].x;
+			vert2[0].s[1] = v[2].y;
+			vert2[0].s[2] = v[2].z;	
+			vert2[0].s[3] = 0.0;
 
-	vert3[0].s[0] = v[3].x;
-	vert3[0].s[1] = v[3].y;
-	vert3[0].s[2] = v[3].z;	
-	vert3[0].s[3] = 0.0;
-
-		
-	origin[0].s[0] = orig.x;
-	origin[0].s[1] = orig.y; 
-	origin[0].s[2] = orig.z; 
-	origin[0].s[3] = 0.0;
-
-	dir[0].s[0] = dest.x;
-	dir[0].s[1] = dest.y;
-	dir[0].s[2] = dest.z;
-	dir[0].s[3] = 0.0;
+			vert3[0].s[0] = v[3].x;
+			vert3[0].s[1] = v[3].y;
+			vert3[0].s[2] = v[3].z;	
+			vert3[0].s[3] = 0.0;
 
 
-		
-	initializeCL();
-	makeCLKernel(arguments.gpuAlgName);
-	}
-	
-	if(arguments.gpuNeeded){  
-	    
-		  runCLKernels();	    
-		  result = true ? ((cartesian[0].s[0] != -1) &&(cartesian[0].s[1] != -1)) : false;		
-		  enterFace = cartesian[0].s[0];
-		  leaveFace = cartesian[0].s[1];
-		  enterPoint = NpVector(cartesian[0].s[2],cartesian[0].s[3],cartesian[0].s[4]);
-		  leavePoint = NpVector(cartesian[0].s[5],cartesian[0].s[6],cartesian[0].s[7]);
-		  ue1 = barycentric[0].s[0];
-		  ue2 = barycentric[0].s[1];
-		  ul1 = barycentric[0].s[2];
-		  ul2 = barycentric[0].s[3];
-		  tEnter = parametric[0].s[0];
-		  tLeave = parametric[0].s[1];
-		  
-	      
-	    }else{
+			origin[0].s[0] = orig.x;
+			origin[0].s[1] = orig.y; 
+			origin[0].s[2] = orig.z; 
+			origin[0].s[3] = 0.0;
 
-        result = arguments.algorithm(orig, (dest-orig),
-                                     v,
-                                     enterFace, leaveFace,
-                                     enterPoint, leavePoint,
-                                     ue1, ue2, ul1, ul2,
-                                     tEnter, tLeave);
-	}
+			dir[0].s[0] = dest.x;
+			dir[0].s[1] = dest.y;
+			dir[0].s[2] = dest.z;
+			dir[0].s[3] = 0.0;	
+
+			runCLKernels();
+
+			result = true ? ((cartesian[0].s[0] != -1) &&(cartesian[0].s[1] != -1)) : false;		
+			enterFace = cartesian[0].s[0];
+			leaveFace = cartesian[0].s[1];
+			enterPoint = NpVector(cartesian[0].s[2],cartesian[0].s[3],cartesian[0].s[4]);
+			leavePoint = NpVector(cartesian[0].s[5],cartesian[0].s[6],cartesian[0].s[7]);
+			ue1 = barycentric[0].s[0];
+			ue2 = barycentric[0].s[1];
+			ul1 = barycentric[0].s[2];
+			ul2 = barycentric[0].s[3];
+			tEnter = parametric[0].s[0];
+			tLeave = parametric[0].s[1];
+
+
+		}else{
+
+			result = arguments.algorithm(orig, (dest-orig),
+				v,
+				enterFace, leaveFace,
+				enterPoint, leavePoint,
+				ue1, ue2, ul1, ul2,
+				tEnter, tLeave);
+		}
 	
     
 
