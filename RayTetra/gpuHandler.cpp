@@ -67,17 +67,18 @@ char deviceName[MAX_NAME_LENGTH];
 
 //Return codes from OpenCL API calls
 //Used for error tracking
- cl_int status;
+cl_int status;
+
+//Event objects
+cl_event read_events[3];//Tracking buffer reads
+cl_event write_events[6];//Tracking buffer writes
+cl_event exec_events[1];//Tracking kernel execution
 
        
 //Bind host variables to kernel arguments and run the CL kernel
 void runCLKernels(void)
 {
-	
-	cl_event read_events[3];
-	cl_event write_events[6];
-	cl_event exec_events[1];
-	
+		
 	size_t globalThreads[1];
 	size_t localThreads[1];
 		
@@ -246,8 +247,6 @@ void runCLKernels(void)
 	  status = clWaitForEvents(1,&exec_events[0]);
 	  if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
 
-	  status = clReleaseEvent(exec_events[0]);
-	  if(status != CL_SUCCESS) exitOnError(" clReleaseEvent. (exec_events[0])");
 	  
 	  status = clEnqueueReadBuffer(
 		commandQueue,
@@ -391,11 +390,6 @@ void runCLKernels(void)
 	
 	status = clWaitForEvents(1,&exec_events[0]);
 	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
-
-	status = clReleaseEvent(exec_events[0]);
-	if(status != CL_SUCCESS) exitOnError(" clReleaseEvent. (exec_events[0])");
-	
-
 	
 	status = clEnqueueReadBuffer(
 		commandQueue,
@@ -884,6 +878,22 @@ void cleanupCL(void)
 	
 	status = clReleaseMemObject(parametric_buf);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (parametric_buf)\n");
+
+	for(int i = 0;i<3;i++)
+	{	
+		status = clReleaseEvent(read_events[i]);
+		if(status != CL_SUCCESS) exitOnError("In clReleaseEvent(read_events)\n");
+	}
+
+	for(int i = 0;i<6;i++)
+	{	
+		status = clReleaseEvent(write_events[i]);
+		if(status != CL_SUCCESS) exitOnError("In clReleaseEvent(write_events)\n");
+	}
+		
+	status = clReleaseEvent(exec_events[0]);
+	if(status != CL_SUCCESS) exitOnError("In clReleaseEvent(exec_events)\n");
+
 
 	status = clReleaseCommandQueue(commandQueue);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseCommandQueue\n");

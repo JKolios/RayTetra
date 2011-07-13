@@ -11,13 +11,13 @@
 
 if ([ $# != 1 ] &&[ $# != 3 ]) 
 then
-    echo "Runs intersection tests for the provided number of intersecting and non-intersecting Ray - Tetrahedron pairs_"
-    echo "Uses the same input data for all included algorithms and checks for possible differences in output_"
-    echo "Uses diff for output comparison_"
+    echo "Runs intersection tests for the provided number of intersecting and non-intersecting Ray - Tetrahedron pairs"
+    echo "Uses the same input data for all included algorithms and checks for possible differences in output"
+    echo "Uses diff for output comparison"
     echo "Usage:"
-    echo "Method 1:Generate a new input file using RandomRayTetra_"
+    echo "Method 1:Generate a new input file using RandomRayTetra"
     echo "/result_compare (Number of intersecting test pairs) (Number of non-intersecting test pairs) (input filename)"
-    echo "Method 2:Use an existing input file_"
+    echo "Method 2:Use an existing input file"
     echo "/result_compare (Filename)"
     exit 1
 fi
