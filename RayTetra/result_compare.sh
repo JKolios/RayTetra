@@ -1,12 +1,12 @@
  #!/bin/bash
 
-# Runs intersection tests for the provided number of intersecting and non-intersecting Ray - Tetrahedron pairs_
-# Uses the same input data for all included algorithms and checks for possible differences in $3__
-# Uses diff for $3_ comparison_
+# Runs intersection tests for the provided number of intersecting and non-intersecting Ray - Tetrahedron pairs
+# Uses the same input data for all included algorithms and checks for possible differences in results
+# Uses diff for filename comparison
 # Usage:"
-# Method 1:Generate a new input file using RandomRayTetra_
+# Method 1:Generate a new input file using RandomRayTetra
 # /result_compare (Number of intersecting test pairs) (Number of non-intersecting test pairs) (Input Filename)
-# Method 2:Use an existing input file_
+# Method 2:Use an existing input file
 # /result_compare (Input Filename)
 
 if ([ $# != 1 ] &&[ $# != 3 ]) 
@@ -22,7 +22,7 @@ then
     exit 1
 fi
 
-rm -f differences
+rm -f $FILENAME.differences
 
 if (($# == 1)) 
 then
@@ -37,7 +37,7 @@ else
   INTERSECTING=$1
   NONINTERSECTING=$2
   FILENAME=$3
-  echo "Generating " $1 "intersecting " $2 "non-intersecting test pairs.Filename:"$FILENAME
+  echo "Generating" $1 "intersecting" $2 "non-intersecting test pairs.Filename:"$FILENAME
   ./RandomRayTetra $FILENAME -i $INTERSECTING -n $NONINTERSECTING
 fi
 
