@@ -149,6 +149,17 @@ void runCLKernels(void)
 	//Break up kernel execution to 1 exec per DEVICE_WORK_ITEMS_PER_LAUNCH work items.
 	cl_uint remaining_width = paddedWidth;
 	cl_uint buffer_offset = 0;
+	
+	for(cl_int i = 0;i<paddedWidth;i++)
+	{
+	  printf("Input %d\n",i);
+	  printf("%f\t%f\t%f\n",origin[i].s[0],origin[i].s[1],origin[i].s[2]);
+	  printf("%f\t%f\t%f\n",dir[i].s[0],dir[i].s[1],dir[i].s[2]);
+	  printf("%f\t%f\t%f\n",vert0[i].s[0],vert0[i].s[1],vert0[i].s[2]);
+	  printf("%f\t%f\t%f\n",vert1[i].s[0],vert1[i].s[1],vert1[i].s[2]);
+	  printf("%f\t%f\t%f\n",vert2[i].s[0],vert2[i].s[1],vert2[i].s[2]);
+	  printf("%f\t%f\t%f\n",vert3[i].s[0],vert3[i].s[1],vert3[i].s[2]);	  
+	}
 		
 	while(remaining_width > DEVICE_WORK_ITEMS_PER_LAUNCH)
 	{	  
