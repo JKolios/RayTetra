@@ -76,8 +76,6 @@ extern cl_int deviceNum;
 extern cl_int status;
 
 //Event objects
-extern cl_event read_events[3];//Tracking buffer reads
-extern cl_event write_events[6];//Tracking buffer writes
 extern cl_event exec_events[1];//Tracking kernel execution
 
 

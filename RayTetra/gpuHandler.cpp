@@ -70,8 +70,6 @@ char deviceName[MAX_NAME_LENGTH];
 cl_int status;
 
 //Event objects
-cl_event read_events[3];//Tracking buffer reads
-cl_event write_events[6];//Tracking buffer writes
 cl_event exec_events[1];//Tracking kernel execution
 
        
@@ -157,77 +155,75 @@ void runCLKernels(void)
 	  	status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  orig_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * bufferWidth,
 		  origin + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[0]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (orig_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  dir_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * bufferWidth,
 		  dir + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[1]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (dir_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert0_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * bufferWidth,
 		  vert0 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[2]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert0_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert1_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * bufferWidth,
 		  vert1 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[3]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert1_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert2_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * bufferWidth,
 		  vert2 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[4]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert2_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert3_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * bufferWidth,
 		  vert3 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[5]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
 	
-	status = clWaitForEvents(6, write_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
 	
 	  //Enqueue a kernel run call.	
 	  globalThreads[0] = DEVICE_WORK_ITEMS_PER_LAUNCH;
@@ -252,26 +248,26 @@ void runCLKernels(void)
 	  status = clEnqueueReadBuffer(
 		commandQueue,
 		cartesian_buf,
-		CL_FALSE,
+		CL_TRUE,
 		0,
 		bufferWidth * sizeof(cl_double8),
 		cartesian + buffer_offset,
 		0,
 		NULL,
-		&read_events[0]);
+		NULL);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
 	
 	status = clEnqueueReadBuffer(
 		commandQueue,
 		barycentric_buf,
-		CL_FALSE,
+		CL_TRUE,
 		0,
 		bufferWidth * sizeof(cl_double4),
 		barycentric+ buffer_offset,
 		0,
 		NULL,
-		&read_events[1]);
+		NULL);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
 	
@@ -279,18 +275,16 @@ void runCLKernels(void)
 	status = clEnqueueReadBuffer(
 		commandQueue,
 		parametric_buf,
-		CL_FALSE,
+		CL_TRUE,
 		0,
 		bufferWidth * sizeof(cl_double2),
 		parametric+ buffer_offset,
 		0,
 		NULL,
-		&read_events[2]);
+		NULL);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
 	
-	status = clWaitForEvents(3, read_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer calls to finish.\n");
 	
 	 remaining_width -= DEVICE_WORK_ITEMS_PER_LAUNCH;
 	 buffer_offset += DEVICE_WORK_ITEMS_PER_LAUNCH;
@@ -304,77 +298,75 @@ void runCLKernels(void)
 		 status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  orig_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * remaining_width,
 		  origin + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[0]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (orig_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  dir_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * remaining_width,
 		  dir + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[1]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (dir_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert0_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * remaining_width,
 		  vert0 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[2]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert0_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert1_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * remaining_width,
 		  vert1 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[3]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert1_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert2_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * remaining_width,
 		  vert2 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[4]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert2_buf)");
 	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert3_buf,
-		  CL_FALSE,
+		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * remaining_width,
 		  vert3 + buffer_offset,
 		  0,
 		  NULL,
-		  &write_events[5]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
 	
-	status = clWaitForEvents(6, write_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
 	
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
@@ -395,26 +387,26 @@ void runCLKernels(void)
 	status = clEnqueueReadBuffer(
 		commandQueue,
 		cartesian_buf,
-		CL_FALSE,
+		CL_TRUE,
 		0,
 		remaining_width * sizeof(cl_double8),
 		cartesian + buffer_offset,
 		0,
 		NULL,
-		&read_events[0]);
+		NULL);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
 	
 	status = clEnqueueReadBuffer(
 		commandQueue,
 		barycentric_buf,
-		CL_FALSE,
+		CL_TRUE,
 		0,
 		remaining_width * sizeof(cl_double4),
 		barycentric+ buffer_offset,
 		0,
 		NULL,
-		&read_events[1]);
+		NULL);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
 	
@@ -422,18 +414,16 @@ void runCLKernels(void)
 	status = clEnqueueReadBuffer(
 		commandQueue,
 		parametric_buf,
-		CL_FALSE,
+		CL_TRUE,
 		0,
 		remaining_width * sizeof(cl_double2),
 		parametric+ buffer_offset,
 		0,
 		NULL,
-		&read_events[2]);
+		NULL);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
 	
-	status = clWaitForEvents(3, read_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer calls to finish.\n");
 
 }
 
@@ -883,18 +873,6 @@ void cleanupCL(void)
 	
 	status = clReleaseMemObject(parametric_buf);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (parametric_buf)\n");
-
-	for(int i = 0;i<3;i++)
-	{	
-		status = clReleaseEvent(read_events[i]);
-		if(status != CL_SUCCESS) exitOnError("In clReleaseEvent(read_events)\n");
-	}
-
-	for(int i = 0;i<6;i++)
-	{	
-		status = clReleaseEvent(write_events[i]);
-		if(status != CL_SUCCESS) exitOnError("In clReleaseEvent(write_events)\n");
-	}
 		
 	status = clReleaseEvent(exec_events[0]);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseEvent(exec_events)\n");
