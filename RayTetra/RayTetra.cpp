@@ -190,6 +190,42 @@ int main(int argc, char* argv[])
 			dir[i].s[3] = 0.0;
 
 		}
+		
+		for(unsigned int i = nTests;i<paddedWidth;i++)
+		{
+
+			vert0[i].s[0] = 0.0;
+			vert0[i].s[1] = 0.0;
+			vert0[i].s[2] = 0.0;	
+			vert0[i].s[3] = 0.0;
+
+			vert1[i].s[0] = 0.0;
+			vert1[i].s[1] = 0.0;
+			vert1[i].s[2] = 0.0;	
+			vert1[i].s[3] = 0.0;
+
+			vert2[i].s[0] = 0.0;
+			vert2[i].s[1] = 0.0;
+			vert2[i].s[2] = 0.0;	
+			vert2[i].s[3] = 0.0;
+
+			vert3[i].s[0] = 0.0;
+			vert3[i].s[1] = 0.0;
+			vert3[i].s[2] = 0.0;	
+			vert3[i].s[3] = 0.0;
+
+		
+			origin[i].s[0] = 0.0;
+			origin[i].s[1] = 0.0; 
+			origin[i].s[2] = 0.0; 
+			origin[i].s[3] = 0.0;
+
+			dir[i].s[0] = 0.0;
+			dir[i].s[1] = 0.0;
+			dir[i].s[2] = 0.0;
+			dir[i].s[3] = 0.0;
+
+		}
 	}
 
         NpProgramTimer timer;

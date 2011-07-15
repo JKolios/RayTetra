@@ -1,0 +1,26 @@
+CPU Haines - CPU Moller1
+Files 100.cpuhaines.txt and 100.cpumoller1.txt are identical
+CPU Moller1 - CPU Moller2
+Files 100.cpumoller1.txt and 100.cpumoller2.txt are identical
+CPU Moller2 - CPU Moller3
+Files 100.cpumoller2.txt and 100.cpumoller3.txt are identical
+CPU Moller1 - CPU Segura0
+Files 100.cpumoller1.txt and 100.cpusegura0.txt are identical
+CPU Segura0 - CPU Segura1
+Files 100.cpusegura0.txt and 100.cpusegura1.txt are identical
+CPU Segura1 - CPU Segura2
+Files 100.cpusegura1.txt and 100.cpusegura2.txt are identical
+CPU Segura0 - CPU STP0
+Files 100.cpusegura0.txt and 100.cpustp0.txt are identical
+CPU STP0 - CPU STP1
+Files 100.cpustp0.txt and 100.cpustp1.txt are identical
+CPU STP1 - CPU STP2
+Files 100.cpustp1.txt and 100.cpustp2.txt are identical
+CPU Segura0 - GPU Segura0
+Files 100.cpusegura0.txt and 100.gpusegura0.txt are identical
+CPU STP0 - GPU STP0
+Files 100.cpustp0.txt and 100.gpustp0.txt are identical
+CPU STP1 - GPU STP1
+Files 100.cpustp1.txt and 100.gpustp1.txt are identical
+CPU STP2 - GPU STP2
+Files 100.cpustp2.txt and 100.gpustp2.txt are identical
