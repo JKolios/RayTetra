@@ -439,6 +439,9 @@ void runCLKernels(void)
 
 void allocateInput(int actual_width)
 {
+	if(threadsPerWavefront == 32)
+	{//if this is an Nvidia GPU
+	  
 	//The maximum workgroup size allowed on the current device
 	//for this kernel.
 	size_t maxGroupSize;
@@ -450,7 +453,13 @@ void allocateInput(int actual_width)
 					  &maxGroupSize, 
 					  NULL);
 	if(status != CL_SUCCESS) exitOnError("Cannot get maximum workgroup size for given kernel.(clGetKernelWorkGroupInfo)\n");
-	printf("%zu\n",maxGroupSize);
+	
+	threadsPerWavefront = (int)maxGroupSize;
+	
+	  
+	}
+
+	printf("%d\n",threadsPerWavefront);
 	
 	//Determine the amount of false entries to pad the input arrays with.
 	//Create a workgroup size of threadsPerWavefront 
