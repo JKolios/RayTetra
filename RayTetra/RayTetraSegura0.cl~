@@ -2,12 +2,12 @@
 
 //Base Segura Algorithm
 __kernel void RayTetraSegura0(
-				__global double4* orig,
-				__global double4* dest,
-				__global double4* vert0,
-				__global double4* vert1,
-				__global double4* vert2,
-				__global double4* vert3,
+				__constant double4* orig,
+				__constant double4* dest,
+				__constant double4* vert0,
+				__constant double4* vert1,
+				__constant double4* vert2,
+				__constant double4* vert3,
 				__global double8* cartesian,
 				__global double4* barycentric,
 				__global double2* parametric)
