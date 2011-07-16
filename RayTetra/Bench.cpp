@@ -31,6 +31,7 @@ struct ProgramArguments
 
 bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments);
 void PrintHelp(char* argv0);
+void fillGPUInput(unsigned int nTests,const std::vector< NpCArrayAdapter<NpVector, 4> > v, const std::vector<NpVector> orig, const std::vector<NpVector> dest);
 
 
 
@@ -251,14 +252,118 @@ int main(int argc, char* argv[])
     resultsFile << timerSTP2.TotalElapsedTime();
     std::cout << timerSTP2.TotalElapsedTime() << std::endl;
     
-    std::cout << "Setting up GPU...  ";
+    std::cout << "Setting up GPU...  "; 
+    initializeCL();
+    
+    makeCLKernel("RayTetraSegura0");
+    allocateInput(nTests);
+    fillGPUInput(nTests,v,orig,dest);
+    allocateBuffers();
+
+    std::cout << "GPU Segura 0...  ";
+
+    NpProgramTimer timerGPUSegura0;
+    timerGPUSegura0.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSegura0.Stop();
+    resultsFile << timerGPUSegura0.TotalElapsedTime()<< ',';
+    std::cout << timerGPUSegura0.TotalElapsedTime() << std::endl;
+    
+    cleanupCL();
+    cleanupHost();
+    
+
+    initializeCL();
+    makeCLKernel("RayTetraSTP0");
+    allocateInput(nTests);
+    fillGPUInput(nTests,v,orig,dest);
+    allocateBuffers();
+
+    std::cout << "GPU STP0...  ";
+
+    NpProgramTimer timerGPUSTP0;
+    timerGPUSTP0.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSTP0.Stop();
+    resultsFile << timerGPUSTP0.TotalElapsedTime()<< ',';
+    std::cout << timerGPUSTP0.TotalElapsedTime() << std::endl;
+    
+    cleanupCL();
+    cleanupHost();
     
     initializeCL();
+    makeCLKernel("RayTetraSTP1");
     allocateInput(nTests);
+    fillGPUInput(nTests,v,orig,dest);
     allocateBuffers();
-	
-	 // Converting input to raytetragpu's input format
-	for(unsigned int i = 0;i<nTests;i++)
+
+    std::cout << "GPU STP1...  ";
+
+    NpProgramTimer timerGPUSTP1;
+    timerGPUSTP1.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSTP1.Stop();
+    resultsFile << timerGPUSTP1.TotalElapsedTime()<< ',';
+    std::cout << timerGPUSTP1.TotalElapsedTime() << std::endl;
+    
+    cleanupCL();
+    cleanupHost();
+    
+    initializeCL();
+    makeCLKernel("RayTetraSTP2");
+    allocateInput(nTests);
+    fillGPUInput(nTests,v,orig,dest);
+    allocateBuffers();
+
+    std::cout << "GPU STP2...  ";
+
+    NpProgramTimer timerGPUSTP2;
+    timerGPUSTP2.Start();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
+    timerGPUSTP2.Stop();
+    resultsFile << timerGPUSTP2.TotalElapsedTime()<< ',';
+    std::cout << timerGPUSTP2.TotalElapsedTime() << std::endl;
+    
+    cleanupCL();
+    cleanupHost();
+    
+    
+    resultsFile << std::endl;
+    
+
+    return 0;
+}
+
+
+
+// Other functions /////////////////////////////////////////////////////////////
+
+bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
+{
+    if (argc != 4)  {
+        PrintHelp(argv[0]);
+        return false;
+    }
+
+    arguments.inputFileName = argv[1];
+    arguments.outputFileName = argv[2];
+    arguments.repetitions = std::atoi(argv[3]);
+
+    return true;
+}
+
+
+
+void PrintHelp(char* argv0)
+{
+    std::cerr << std::endl << "Usage: " << argv0 
+              << " <input file> <output file> <repetitions>" << std::endl;
+}
+
+//Converts input data to a format suitable for GPU calc
+void fillGPUInput(unsigned int nTests,const std::vector< NpCArrayAdapter<NpVector, 4> > v,const std::vector<NpVector> orig, const std::vector<NpVector> dest)
+{
+  	for(unsigned int i = 0;i<nTests;i++)
 	{
 
 		vert0[i].s[0] = v[i][0].x;
@@ -293,77 +398,5 @@ int main(int argc, char* argv[])
 		dir[i].s[3] = 0.0;
 
 	}
-		
-    makeCLKernel("RayTetraSegura0");	     
-    std::cout << "GPU Segura 0...  ";
-
-    NpProgramTimer timerGPUSegura0;
-    timerGPUSegura0.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSegura0.Stop();
-    resultsFile << timerGPUSegura0.TotalElapsedTime()<< ',';
-    std::cout << timerGPUSegura0.TotalElapsedTime() << std::endl;
-    
-    makeCLKernel("RayTetraSTP0");	     
-    std::cout << "GPU STP 0...  ";
-
-    NpProgramTimer timerGPUSTP0;
-    timerGPUSTP0.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSTP0.Stop();
-    resultsFile << timerGPUSTP0.TotalElapsedTime()<< ',';
-    std::cout << timerGPUSTP0.TotalElapsedTime() << std::endl;
-    
-    makeCLKernel("RayTetraSTP1");	     
-    std::cout << "GPU STP 1...  ";
-
-    NpProgramTimer timerGPUSTP1;
-    timerGPUSTP1.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSTP1.Stop();
-    resultsFile << timerGPUSTP1.TotalElapsedTime()<< ',';
-    std::cout << timerGPUSTP1.TotalElapsedTime() << std::endl;
-    
-    makeCLKernel("RayTetraSTP2");	     
-    std::cout << "GPU STP 2...  ";
-
-    NpProgramTimer timerGPUSTP2;
-    timerGPUSTP2.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSTP2.Stop();
-    resultsFile << timerGPUSTP2.TotalElapsedTime();
-    std::cout << timerGPUSTP2.TotalElapsedTime() << std::endl;
-    
-    
-    resultsFile << std::endl;
-    
-
-    return 0;
-}
-
-
-
-// Other functions /////////////////////////////////////////////////////////////
-
-bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
-{
-    if (argc != 4)  {
-        PrintHelp(argv[0]);
-        return false;
-    }
-
-    arguments.inputFileName = argv[1];
-    arguments.outputFileName = argv[2];
-    arguments.repetitions = std::atoi(argv[3]);
-
-    return true;
-}
-
-
-
-void PrintHelp(char* argv0)
-{
-    std::cerr << std::endl << "Usage: " << argv0 
-              << " <input file> <output file> <repetitions>" << std::endl;
 }
 

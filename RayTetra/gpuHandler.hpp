@@ -59,9 +59,9 @@ extern cl_program program;
 
 extern cl_kernel  kernel;
 
-//The number of work items(threads) launched for every work group of the target device
+//The number of work items(threads) launched (at minimum) for every work group of the target device
 //64 for AMD, 32 for Nvidia GPUs
-extern cl_int threadsPerGroup;
+extern cl_int threadsPerWavefront;
 
 //Device Name string
 //Used to select between precompiled kernels

@@ -25,7 +25,7 @@
 //Actual Ray-Tetrahedron pairs processed. 
  cl_uint actual_width;
 
-//actual_width padded to a multiple of threadsPerGroup
+//actual_width padded to a multiple of threadsPerWavefront
  cl_uint padded_width;
 
 //The width of the input and output buffers used
@@ -54,9 +54,9 @@
 
  cl_kernel  kernel;
  
-//The number of work items(threads) launched for every work group of the target device
+//The number of work items(threads) launched (at minimum) for every work group of the target device
 //64 for AMD, 32 for Nvidia GPUs, ignored for CPUs
-cl_int threadsPerGroup = 1;
+cl_int threadsPerWavefront = 1;
 
 //Device Number (for loading a premade binary)
 //Default is 0 (First GPU listed in the platform)
@@ -83,7 +83,7 @@ void runCLKernels(void)
 	size_t globalThreads[1];
 	size_t localThreads[1];
 		
-	localThreads[0]= threadsPerGroup;  
+	localThreads[0]= threadsPerWavefront;  
 		
 	//Assign the buffers as kernel arguments
 	status = clSetKernelArg(
@@ -439,10 +439,22 @@ void runCLKernels(void)
 
 void allocateInput(int actual_width)
 {
+	//The maximum workgroup size allowed on the current device
+	//for this kernel.
+	size_t maxGroupSize;
+      
+	status = clGetKernelWorkGroupInfo(kernel, 
+					  devices[0], 
+					  CL_KERNEL_WORK_GROUP_SIZE,
+					  sizeof(size_t),
+					  &maxGroupSize, 
+					  NULL);
+	if(status != CL_SUCCESS) exitOnError("Cannot get maximum workgroup size for given kernel.(clGetKernelWorkGroupInfo)\n");
+	printf("%zu\n",maxGroupSize);
 	
 	//Determine the amount of false entries to pad the input arrays with.
-	//Create a workgroup size of threadsPerGroup 
-	if((actual_width % threadsPerGroup) != 0) padded_width = actual_width + (threadsPerGroup - (actual_width % threadsPerGroup));
+	//Create a workgroup size of threadsPerWavefront 
+	if((actual_width % threadsPerWavefront) != 0) padded_width = actual_width + (threadsPerWavefront - (actual_width % threadsPerWavefront));
 	else padded_width = actual_width;
 	
 	#if defined (_WIN32)
@@ -715,13 +727,13 @@ void initializeCL()
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_NAME,MAX_NAME_LENGTH,deviceName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number(clGetDeviceInfo)");
 	
-	//Identify the device's vendor (used to set threadsPerGroup)
+	//Identify the device's vendor (used to set threadsPerWavefront)
 	char deviceVendorName[MAX_NAME_LENGTH];
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH,deviceVendorName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device vendor's name for given device number(clGetDeviceInfo)");
 	
-	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerGroup = 64;
-	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerGroup = 32;
+	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerWavefront = 64;
+	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerWavefront = 32;
  
 }
 
@@ -937,6 +949,12 @@ void cleanupCL(void)
 
 	status = clReleaseContext(context);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseContext\n");
+	
+	if(devices != NULL)
+	{
+		free(devices);
+		devices = NULL;
+	}
 
 }
 
@@ -1041,11 +1059,7 @@ void cleanupHost(void)
 	}
 #endif
 
-	if(devices != NULL)
-	{
-		free(devices);
-		devices = NULL;
-	}
+
 	
 }
 
