@@ -1,4 +1,11 @@
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#ifdef cl_khr_fp64
+    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
+#ifdef cl_amd_fp64
+    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
+
 
 //Base Segura Algorithm
 __kernel void RayTetraSegura0(

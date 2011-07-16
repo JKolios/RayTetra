@@ -1,4 +1,11 @@
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#ifdef cl_khr_fp64
+    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
+#ifdef cl_amd_fp64
+    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
+
 
 //Section 3.2 Optimizations added
 __kernel void RayTetraSTP1(
