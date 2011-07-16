@@ -29,8 +29,12 @@
  cl_uint padded_width;
 
 //The width of the input and output buffers used
-//Must be <= DEVICE_WORK_ITEMS_PER_LAUNCH
+//Must be <= workItemsPerLaunch
  cl_uint buffer_width;
+ 
+ //The maximum number of work items to be calculated in a single kernel launch
+//Prevents exhaustion of GPU resources
+ size_t workItemsPerLaunch;
 
 //The memory buffers that are used as input/output to the OpenCL kernel
  cl_mem orig_buf;
@@ -56,7 +60,7 @@
  
 //The number of work items(threads) launched (at minimum) for every work group of the target device
 //64 for AMD, 32 for Nvidia GPUs, ignored for CPUs
-cl_int threadsPerWavefront = 1;
+size_t threadsPerWavefront = 1;
 
 //Device Number (for loading a premade binary)
 //Default is 0 (First GPU listed in the platform)
@@ -149,11 +153,11 @@ void runCLKernels(void)
 		(void *)&parametric_buf);
 	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
 
-	//Break up kernel execution to 1 exec per DEVICE_WORK_ITEMS_PER_LAUNCH work items.
+	//Break up kernel execution to 1 exec per workItemsPerLaunch work items.
 	cl_uint remaining_width = padded_width;
 	cl_uint buffer_offset = 0;
 		
-	while(remaining_width > DEVICE_WORK_ITEMS_PER_LAUNCH)
+	while(remaining_width > workItemsPerLaunch)
 	{	  
 	  	status = clEnqueueWriteBuffer(
 		  commandQueue,
@@ -231,7 +235,8 @@ void runCLKernels(void)
 	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
 	
 	  //Enqueue a kernel run call.	
-	  globalThreads[0] = DEVICE_WORK_ITEMS_PER_LAUNCH;
+	  globalThreads[0] = workItemsPerLaunch;
+	  //printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
 	  status = clEnqueueNDRangeKernel(
 		  commandQueue,
 		  kernel,
@@ -292,14 +297,13 @@ void runCLKernels(void)
 	status = clWaitForEvents(3, read_events);
 	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer calls to finish.\n");
 	
-	 remaining_width -= DEVICE_WORK_ITEMS_PER_LAUNCH;
-	 buffer_offset += DEVICE_WORK_ITEMS_PER_LAUNCH;
+	 remaining_width -= workItemsPerLaunch;
+	 buffer_offset += workItemsPerLaunch;
 	  
 	}
 		
 	//Final kernel run call for remaining work_items
 	globalThreads[0] = remaining_width;
-	//printf("Running kernel with work_items:%zu\n",globalThreads[0]);
 	
 		 status = clEnqueueWriteBuffer(
 		  commandQueue,
@@ -376,6 +380,7 @@ void runCLKernels(void)
 	status = clWaitForEvents(6, write_events);
 	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
 	
+	//printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
 		kernel,
@@ -440,27 +445,28 @@ void runCLKernels(void)
 void allocateInput(int actual_width)
 {
 	if(threadsPerWavefront == 32)
-	{//if this is an Nvidia GPU
+	{//if this is an Nvidia GPU use the maximum workgroup size allowed by the kernel
 	  
-	//The maximum workgroup size allowed on the current device
-	//for this kernel.
-	size_t maxGroupSize;
+	    //The maximum workgroup size allowed on the current device
+	    //for this kernel.
+	    size_t maxGroupSize;
       
-	status = clGetKernelWorkGroupInfo(kernel, 
+	    status = clGetKernelWorkGroupInfo(kernel, 
 					  devices[0], 
 					  CL_KERNEL_WORK_GROUP_SIZE,
 					  sizeof(size_t),
 					  &maxGroupSize, 
 					  NULL);
-	if(status != CL_SUCCESS) exitOnError("Cannot get maximum workgroup size for given kernel.(clGetKernelWorkGroupInfo)\n");
+	    if(status != CL_SUCCESS) exitOnError("Cannot get maximum workgroup size for given kernel.(clGetKernelWorkGroupInfo)\n");
 	
-	threadsPerWavefront = (int)maxGroupSize;
-	
-	  
+	    threadsPerWavefront = maxGroupSize;
+	    workItemsPerLaunch =  NVIDIA_WORK_ITEMS_PER_LAUNCH;
 	}
-
-	printf("%d\n",threadsPerWavefront);
-	
+	else
+	{
+	  workItemsPerLaunch =  ATI_WORK_ITEMS_PER_LAUNCH;
+	}
+	    
 	//Determine the amount of false entries to pad the input arrays with.
 	//Create a workgroup size of threadsPerWavefront 
 	if((actual_width % threadsPerWavefront) != 0) padded_width = actual_width + (threadsPerWavefront - (actual_width % threadsPerWavefront));
@@ -537,7 +543,7 @@ void allocateBuffers(void)
 {
 	//Create Input/Output buffers
 
-	buffer_width = (padded_width <= DEVICE_WORK_ITEMS_PER_LAUNCH) ? padded_width:DEVICE_WORK_ITEMS_PER_LAUNCH;
+	buffer_width = (padded_width <= workItemsPerLaunch) ? padded_width:workItemsPerLaunch;
 
 	// Create OpenCL memory buffers
 	//Input buffers

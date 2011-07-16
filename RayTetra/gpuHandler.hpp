@@ -3,8 +3,11 @@
 
 //Provides GPU init and cleanup functions to RayTetra and Bench
 
-//The maximum number of work items to use per kernel execution
-#define DEVICE_WORK_ITEMS_PER_LAUNCH 910016
+//The maximum number of work items to use per kernel execution in an ATI card
+#define ATI_WORK_ITEMS_PER_LAUNCH 910016
+
+//The maximum number of work items to use per kernel execution in an ATI card
+#define NVIDIA_WORK_ITEMS_PER_LAUNCH 910080
 
 //The maximum number of chars in a device name or binary filename created at runtime
 #define MAX_NAME_LENGTH 256
@@ -30,12 +33,16 @@ extern cl_double2 *parametric; //Parametric distances of entry and exit points f
 //Actual Ray-Tetrahedron pairs processed. 
 extern cl_uint actual_width;
 
-//actual_width padded to a multiple of DEVICE_WORK_ITEMS_PER_WAVEFRONT
+//actual_width padded to a multiple of threadsPerWavefront
 extern cl_uint padded_width;
 
 //The width of the input and output buffers used
 //Must be <= DEVICE_WORK_ITEMS_PER_LAUNCH
 extern cl_uint buffer_width;
+
+//The maximum number of work items to be calculated in a single kernel launch
+//Prevents exhaustion of GPU resources
+extern size_t workItemsPerLaunch;
 
 //The memory buffers that are used as input/output to the OpenCL kernel
 extern cl_mem orig_buf;
@@ -61,7 +68,7 @@ extern cl_kernel  kernel;
 
 //The number of work items(threads) launched (at minimum) for every work group of the target device
 //64 for AMD, 32 for Nvidia GPUs
-extern cl_int threadsPerWavefront;
+extern size_t threadsPerWavefront;
 
 //Device Name string
 //Used to select between precompiled kernels
@@ -79,6 +86,8 @@ extern cl_int status;
 extern cl_event read_events[3];//Tracking buffer reads
 extern cl_event write_events[6];//Tracking buffer writes
 extern cl_event exec_events[1];//Tracking kernel execution
+
+
 
 
 //Function Declarations
