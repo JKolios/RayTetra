@@ -1,6 +1,6 @@
  
- #!/bin/bash
-
+#!/bin/bash
+# An iterated version of result_compare.
 # Runs intersection tests for the provided number of intersecting and non-intersecting Ray - Tetrahedron pairs
 # Uses the same input data for all included algorithms and checks for possible differences in results
 # Uses diff for filename comparison
