@@ -149,8 +149,8 @@ int main(int argc, char* argv[])
         //If a GPU algorithm has been selected, initialise the GPU
         if(arguments.gpuNeeded) {
 	  	
-		initializeCL();
-		makeCLKernel(arguments.gpuAlgName);
+		initializeCL(0);
+		makeCLKernel(arguments.gpuAlgName,0);
 		allocateInput(nTests);
 		allocateBuffers();
 	
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
         for (unsigned int r = 0; r < arguments.repetitions; ++r)  {
           if(arguments.gpuNeeded){  
 	    
-	    runCLKernels();	    
+	    runCLKernelsWithIO();	    
 	    for(int j=0;j < nTests;++j)
 	    {
 	      result[j] = true ? ((cartesian[j].s[0] != -1) &&(cartesian[j].s[1] != -1)) : false;
@@ -274,8 +274,8 @@ int main(int argc, char* argv[])
         dataFile >> v[0] >> v[1] >> v[2] >> v[3] >> orig >> dest;
 	
 		if(arguments.gpuNeeded) {
-			initializeCL();
-			makeCLKernel(arguments.gpuAlgName);
+			initializeCL(0);
+			makeCLKernel(arguments.gpuAlgName,0);
 			allocateInput(1);
 			allocateBuffers();
 
@@ -310,7 +310,7 @@ int main(int argc, char* argv[])
 			dir[0].s[2] = dest.z;
 			dir[0].s[3] = 0.0;	
 
-			runCLKernels();
+			runCLKernelsWithIO();
 
 			result = true ? ((cartesian[0].s[0] != -1) &&(cartesian[0].s[1] != -1)) : false;		
 			enterFace = cartesian[0].s[0];

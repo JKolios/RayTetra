@@ -3,11 +3,9 @@
 
 //Provides GPU init and cleanup functions to RayTetra and Bench
 
-//The maximum number of work items to use per kernel execution in an ATI card
-#define ATI_WORK_ITEMS_PER_LAUNCH 910016
-
-//The maximum number of work items to use per kernel execution in an ATI card
-#define NVIDIA_WORK_ITEMS_PER_LAUNCH 910080
+//The maximum number of work items to use per kernel execution
+//This helps avoid crashes due to insufficient GPU resources
+#define WORK_ITEM_LIMIT 910080
 
 //The maximum number of chars in a device name or binary filename created at runtime
 #define MAX_NAME_LENGTH 256
@@ -33,16 +31,12 @@ extern cl_double2 *parametric; //Parametric distances of entry and exit points f
 //Actual Ray-Tetrahedron pairs processed. 
 extern cl_uint actual_width;
 
-//actual_width padded to a multiple of threadsPerWavefront
+//actual_width padded to a multiple of threadsPerWorkgroup
 extern cl_uint padded_width;
 
 //The width of the input and output buffers used
-//Must be <= DEVICE_WORK_ITEMS_PER_LAUNCH
+//Must be <= WORK_ITEM_LIMIT
 extern cl_uint buffer_width;
-
-//The maximum number of work items to be calculated in a single kernel launch
-//Prevents exhaustion of GPU resources
-extern size_t workItemsPerLaunch;
 
 //The memory buffers that are used as input/output to the OpenCL kernel
 extern cl_mem orig_buf;
@@ -67,16 +61,12 @@ extern cl_program program;
 extern cl_kernel  kernel;
 
 //The number of work items(threads) launched (at minimum) for every work group of the target device
-//64 for AMD, 32 for Nvidia GPUs
-extern size_t threadsPerWavefront;
+//64 for AMD GPUs, a multiple of 32 determined at runtime for Nvidia GPUs, ignored for CPUs
+extern size_t threadsPerWorkgroup;
 
 //Device Name string
 //Used to select between precompiled kernels
 extern char deviceName[];
-
-//Device Number (for loading a premade binary)
-//Default is 0 (First GPU listed in the platform)
-extern cl_int deviceNum;
 
 //Return codes from OpenCL API calls
 //Used for error tracking
@@ -88,15 +78,13 @@ extern cl_event write_events[6];//Tracking buffer writes
 extern cl_event exec_events[1];//Tracking kernel execution
 
 
-
-
 //Function Declarations
 
 //CL environment init
-void initializeCL();
+void initializeCL(int);
 
 //Kernel Compilation or Binary Loading
-void makeCLKernel(const char*);
+void makeCLKernel(const char*,int);
 
 //Input Processing
 void allocateInput(int);
@@ -104,7 +92,18 @@ void allocateInput(int);
 //Input/output buffer allocation
 void allocateBuffers(void);
 
+//Fills input buffers with data
+void writeBuffers(cl_uint,cl_uint);
+
+//Reads data from output buffers
+void readBuffers(cl_uint,cl_uint);
+
 //Execute kernels on OpenCL Device
+//This version includes buffer reads and writes
+void runCLKernelsWithIO(void);
+
+//Execute kernels on OpenCL Device
+//Execution Only (for benchmarking)
 void runCLKernels(void);
 
 //Exports a binary image of the current kernel

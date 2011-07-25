@@ -25,17 +25,13 @@
 //Actual Ray-Tetrahedron pairs processed. 
  cl_uint actual_width;
 
-//actual_width padded to a multiple of threadsPerWavefront
+//actual_width padded to a multiple of threadsPerWorkgroup
  cl_uint padded_width;
 
 //The width of the input and output buffers used
-//Must be <= workItemsPerLaunch
+//Must be <= WORK_ITEM_LIMIT
  cl_uint buffer_width;
  
- //The maximum number of work items to be calculated in a single kernel launch
-//Prevents exhaustion of GPU resources
- size_t workItemsPerLaunch;
-
 //The memory buffers that are used as input/output to the OpenCL kernel
  cl_mem orig_buf;
  cl_mem dir_buf;
@@ -59,13 +55,10 @@
  cl_kernel  kernel;
  
 //The number of work items(threads) launched (at minimum) for every work group of the target device
-//64 for AMD, 32 for Nvidia GPUs, ignored for CPUs
-size_t threadsPerWavefront = 1;
+//64 for AMD GPUs, a multiple of 32 determined at runtime for Nvidia GPUs, ignored for CPUs
+size_t threadsPerWorkgroup = 1;
 
-//Device Number (for loading a premade binary)
-//Default is 0 (First GPU listed in the platform)
- cl_int deviceNum = 0;
- 
+
 //Device Name string
 //Used to select between precompiled kernels
 char deviceName[MAX_NAME_LENGTH];
@@ -80,163 +73,29 @@ cl_event write_events[6];//Tracking buffer writes
 cl_event exec_events[1];//Tracking kernel execution
 
        
-//Bind host variables to kernel arguments and run the CL kernel
-void runCLKernels(void)
+//Run the CL kernel
+//Handles buffer IO
+void runCLKernelsWithIO(void)
 {
 		
 	size_t globalThreads[1];
 	size_t localThreads[1];
 		
-	localThreads[0]= threadsPerWavefront;  
+	localThreads[0]= threadsPerWorkgroup;  
 		
-	//Assign the buffers as kernel arguments
-	status = clSetKernelArg(
-		kernel, 
-		0, 
-		sizeof(cl_mem), 
-		(void *)&orig_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (orig_buf)"); 
 
-	status = clSetKernelArg(
-		kernel, 
-		1, 
-		sizeof(cl_mem), 
-		(void *)&dir_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (dir_buf)"); 
 
-	status = clSetKernelArg(
-		kernel, 
-		2, 
-		sizeof(cl_mem), 
-		(void *)&vert0_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert0_buf)");
-
-	status = clSetKernelArg(
-		kernel, 
-		3, 
-		sizeof(cl_mem), 
-		(void *)&vert1_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert1_buf)"); 
-
-	status = clSetKernelArg(
-		kernel, 
-		4, 
-		sizeof(cl_mem), 
-		(void *)&vert2_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert2_buf)"); 
-
-	status = clSetKernelArg(
-		kernel, 
-		5, 
-		sizeof(cl_mem), 
-		(void *)&vert3_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert3_buf)"); 
-
-	status = clSetKernelArg(
-		kernel, 
-		6, 
-		sizeof(cl_mem), 
-		(void *)&cartesian_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
-	
-	status = clSetKernelArg(
-		kernel, 
-		7, 
-		sizeof(cl_mem), 
-		(void *)&barycentric_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
-	
-		status = clSetKernelArg(
-		kernel, 
-		8, 
-		sizeof(cl_mem), 
-		(void *)&parametric_buf);
-	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
-
-	//Break up kernel execution to 1 exec per workItemsPerLaunch work items.
-	cl_uint remaining_width = padded_width;
-	cl_uint buffer_offset = 0;
+	//Break up kernel execution to 1 exec per WORK_ITEM_LIMIT work items.
+	cl_uint remainingWidth = padded_width;
+	cl_uint bufferOffset = 0;
 		
-	while(remaining_width > workItemsPerLaunch)
+	while(remainingWidth > WORK_ITEM_LIMIT)
 	{	  
-	  	status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  orig_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * buffer_width,
-		  origin + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[0]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (orig_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  dir_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * buffer_width,
-		  dir + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[1]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (dir_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert0_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * buffer_width,
-		  vert0 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[2]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert0_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert1_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * buffer_width,
-		  vert1 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[3]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert1_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert2_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * buffer_width,
-		  vert2 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[4]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert2_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert3_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * buffer_width,
-		  vert3 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[5]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
-	
-	status = clWaitForEvents(6, write_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
-	
+	  
+	  writeBuffers(bufferOffset,WORK_ITEM_LIMIT);
 	  //Enqueue a kernel run call.	
-	  globalThreads[0] = workItemsPerLaunch;
-	  //printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
+	  globalThreads[0] = WORK_ITEM_LIMIT;
+	  printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
 	  status = clEnqueueNDRangeKernel(
 		  commandQueue,
 		  kernel,
@@ -252,135 +111,20 @@ void runCLKernels(void)
 	
 	  status = clWaitForEvents(1,&exec_events[0]);
 	  if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
-
 	  
-	  status = clEnqueueReadBuffer(
-		commandQueue,
-		cartesian_buf,
-		CL_FALSE,
-		0,
-		buffer_width * sizeof(cl_double8),
-		cartesian + buffer_offset,
-		0,
-		NULL,
-		&read_events[0]);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
+	  readBuffers(bufferOffset,WORK_ITEM_LIMIT);
 	
-	status = clEnqueueReadBuffer(
-		commandQueue,
-		barycentric_buf,
-		CL_FALSE,
-		0,
-		buffer_width * sizeof(cl_double4),
-		barycentric+ buffer_offset,
-		0,
-		NULL,
-		&read_events[1]);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	
-	status = clEnqueueReadBuffer(
-		commandQueue,
-		parametric_buf,
-		CL_FALSE,
-		0,
-		buffer_width * sizeof(cl_double2),
-		parametric+ buffer_offset,
-		0,
-		NULL,
-		&read_events[2]);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	status = clWaitForEvents(3, read_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer calls to finish.\n");
-	
-	 remaining_width -= workItemsPerLaunch;
-	 buffer_offset += workItemsPerLaunch;
+	 remainingWidth -= WORK_ITEM_LIMIT;
+	 bufferOffset += WORK_ITEM_LIMIT;
 	  
 	}
 		
 	//Final kernel run call for remaining work_items
-	globalThreads[0] = remaining_width;
+	globalThreads[0] = remainingWidth;
 	
-		 status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  orig_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * remaining_width,
-		  origin + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[0]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (orig_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  dir_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * remaining_width,
-		  dir + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[1]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (dir_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert0_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * remaining_width,
-		  vert0 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[2]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert0_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert1_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * remaining_width,
-		  vert1 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[3]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert1_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert2_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * remaining_width,
-		  vert2 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[4]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert2_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert3_buf,
-		  CL_FALSE,
-		  0,
-		  sizeof(cl_double4) * remaining_width,
-		  vert3 + buffer_offset,
-		  0,
-		  NULL,
-		  &write_events[5]); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
-	
-	status = clWaitForEvents(6, write_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
-	
-	//printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
+	writeBuffers(bufferOffset,remainingWidth);
+		
+	printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
 		kernel,
@@ -397,58 +141,46 @@ void runCLKernels(void)
 	status = clWaitForEvents(1,&exec_events[0]);
 	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
 	
-	status = clEnqueueReadBuffer(
-		commandQueue,
-		cartesian_buf,
-		CL_FALSE,
-		0,
-		remaining_width * sizeof(cl_double8),
-		cartesian + buffer_offset,
-		0,
-		NULL,
-		&read_events[0]);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	status = clEnqueueReadBuffer(
-		commandQueue,
-		barycentric_buf,
-		CL_FALSE,
-		0,
-		remaining_width * sizeof(cl_double4),
-		barycentric+ buffer_offset,
-		0,
-		NULL,
-		&read_events[1]);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	
-	status = clEnqueueReadBuffer(
-		commandQueue,
-		parametric_buf,
-		CL_FALSE,
-		0,
-		remaining_width * sizeof(cl_double2),
-		parametric+ buffer_offset,
-		0,
-		NULL,
-		&read_events[2]);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	status = clWaitForEvents(3, read_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer calls to finish.\n");
+	readBuffers(bufferOffset,remainingWidth);
 
 }
 
+//Run the CL kernel
+//Buffer I/O must be handled separately
+void runCLKernels(void)
+{
+		
+	size_t globalThreads[1];
+	size_t localThreads[1];
+		
+	localThreads[0]= threadsPerWorkgroup;  			
+	globalThreads[0] = padded_width;
+	
+	status = clEnqueueNDRangeKernel(
+		commandQueue,
+		kernel,
+		1,
+		NULL,
+		globalThreads,
+		localThreads,
+		0,
+		NULL,
+		&exec_events[0]);
+	if(status != CL_SUCCESS) exitOnError("Enqueueing kernel onto command queue.(clEnqueueNDRangeKernel)"); 
+
+	
+	status = clWaitForEvents(1,&exec_events[0]);
+	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
+}
+
+//Determines the size of the input arrays needed and allocates them
 void allocateInput(int actual_width)
 {
-	if(threadsPerWavefront == 32)
+	//The size of the input arrays and buffers must be a multiple of the workgroup size
+	if(threadsPerWorkgroup == 32)
 	{//if this is an Nvidia GPU use the maximum workgroup size allowed by the kernel
 	  
-	    //The maximum workgroup size allowed on the current device
-	    //for this kernel.
+	    //Determine the maximum workgroup size allowed on the current device for this kernel.
 	    size_t maxGroupSize;
       
 	    status = clGetKernelWorkGroupInfo(kernel, 
@@ -459,19 +191,18 @@ void allocateInput(int actual_width)
 					  NULL);
 	    if(status != CL_SUCCESS) exitOnError("Cannot get maximum workgroup size for given kernel.(clGetKernelWorkGroupInfo)\n");
 	
-	    threadsPerWavefront = maxGroupSize;
-	    workItemsPerLaunch =  NVIDIA_WORK_ITEMS_PER_LAUNCH;
+	    threadsPerWorkgroup = maxGroupSize;
 	}
-	else
-	{
-	  workItemsPerLaunch =  ATI_WORK_ITEMS_PER_LAUNCH;
-	}
+
+
 	    
 	//Determine the amount of false entries to pad the input arrays with.
-	//Create a workgroup size of threadsPerWavefront 
-	if((actual_width % threadsPerWavefront) != 0) padded_width = actual_width + (threadsPerWavefront - (actual_width % threadsPerWavefront));
+	//Create a workgroup size of threadsPerWorkgroup 
+	if((actual_width % threadsPerWorkgroup) != 0) padded_width = actual_width + (threadsPerWorkgroup - (actual_width % threadsPerWorkgroup));
 	else padded_width = actual_width;
 	
+	//Memory used to store vector objects must be stored in 16 byte aligned addresses.
+	//Mostly needed for 32bit systems.
 	#if defined (_WIN32)
 	
 	//Input Arrays
@@ -539,11 +270,11 @@ void allocateInput(int actual_width)
 	
 }
 
+//Create Input/Output buffers and assign them as kernel arguments
 void allocateBuffers(void)
 {
-	//Create Input/Output buffers
-
-	buffer_width = (padded_width <= workItemsPerLaunch) ? padded_width:workItemsPerLaunch;
+	
+	buffer_width = (padded_width <= WORK_ITEM_LIMIT) ? padded_width:WORK_ITEM_LIMIT;
 
 	// Create OpenCL memory buffers
 	//Input buffers
@@ -620,50 +351,208 @@ void allocateBuffers(void)
 	  NULL, 
 	  &status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");
+	
+	//Assign the buffers as kernel arguments
+	status = clSetKernelArg(
+		kernel, 
+		0, 
+		sizeof(cl_mem), 
+		(void *)&orig_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (orig_buf)"); 
+
+	status = clSetKernelArg(
+		kernel, 
+		1, 
+		sizeof(cl_mem), 
+		(void *)&dir_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (dir_buf)"); 
+
+	status = clSetKernelArg(
+		kernel, 
+		2, 
+		sizeof(cl_mem), 
+		(void *)&vert0_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert0_buf)");
+
+	status = clSetKernelArg(
+		kernel, 
+		3, 
+		sizeof(cl_mem), 
+		(void *)&vert1_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert1_buf)"); 
+
+	status = clSetKernelArg(
+		kernel, 
+		4, 
+		sizeof(cl_mem), 
+		(void *)&vert2_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert2_buf)"); 
+
+	status = clSetKernelArg(
+		kernel, 
+		5, 
+		sizeof(cl_mem), 
+		(void *)&vert3_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (vert3_buf)"); 
+
+	status = clSetKernelArg(
+		kernel, 
+		6, 
+		sizeof(cl_mem), 
+		(void *)&cartesian_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
+	
+	status = clSetKernelArg(
+		kernel, 
+		7, 
+		sizeof(cl_mem), 
+		(void *)&barycentric_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
+	
+		status = clSetKernelArg(
+		kernel, 
+		8, 
+		sizeof(cl_mem), 
+		(void *)&parametric_buf);
+	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
 
   
 }
 
-
-//Converts the contents of a file into a string
-//Used to feed kernel source code to the OpenCL Compiler
-std::string convertToString(const char *filename)
+//Fills input buffers with data
+void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 {
-	size_t size;
-	char*  str;
-	std::string s;
-
-	std::fstream f(filename, (std::fstream::in | std::fstream::binary));
-
-	if(f.is_open())
-	{
-		size_t fileSize;
-		f.seekg(0, std::fstream::end);
-		size = fileSize = f.tellg();
-		f.seekg(0, std::fstream::beg);
-
-		str = new char[size+1];
-		if(!str)
-		{
-			f.close();
-			return NULL;
-		}
-
-		f.read(str, fileSize);
-		f.close();
-		str[size] = '\0';
-
-		s = str;
-		delete[] str;
-		return s;
-	}
-	return "NULL";
+  //printf("Offset:%d Entries to Write:%d Buffer Width:%d\n",bufferOffset,entriesToWrite,buffer_width);
+  
+		status = clEnqueueWriteBuffer(
+		  commandQueue,
+		  orig_buf,
+		  CL_FALSE,
+		  0,
+		  sizeof(cl_double4) * entriesToWrite,
+		  origin + bufferOffset,
+		  0,
+		  NULL,
+		  &write_events[0]); 				  
+	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (orig_buf)");
+	
+		status = clEnqueueWriteBuffer(
+		  commandQueue,
+		  dir_buf,
+		  CL_FALSE,
+		  0,
+		  sizeof(cl_double4) * entriesToWrite,
+		  dir + bufferOffset,
+		  0,
+		  NULL,
+		  &write_events[1]); 				  
+	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (dir_buf)");
+	
+		status = clEnqueueWriteBuffer(
+		  commandQueue,
+		  vert0_buf,
+		  CL_FALSE,
+		  0,
+		  sizeof(cl_double4) * entriesToWrite,
+		  vert0 + bufferOffset,
+		  0,
+		  NULL,
+		  &write_events[2]); 				  
+	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert0_buf)");
+	
+		status = clEnqueueWriteBuffer(
+		  commandQueue,
+		  vert1_buf,
+		  CL_FALSE,
+		  0,
+		  sizeof(cl_double4) * entriesToWrite,
+		  vert1 + bufferOffset,
+		  0,
+		  NULL,
+		  &write_events[3]); 				  
+	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert1_buf)");
+	
+		status = clEnqueueWriteBuffer(
+		  commandQueue,
+		  vert2_buf,
+		  CL_FALSE,
+		  0,
+		  sizeof(cl_double4) * buffer_width,
+		  vert2 + bufferOffset,
+		  0,
+		  NULL,
+		  &write_events[4]); 				  
+	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert2_buf)");
+	
+		status = clEnqueueWriteBuffer(
+		  commandQueue,
+		  vert3_buf,
+		  CL_FALSE,
+		  0,
+		  sizeof(cl_double4) * buffer_width,
+		  vert3 + bufferOffset,
+		  0,
+		  NULL,
+		  &write_events[5]); 				  
+	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
+	
+	status = clWaitForEvents(6, write_events);
+	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
+  
 }
 
+//Reads data from output buffers
+void readBuffers(cl_uint bufferOffset,cl_uint entriesToRead)
+{
+    //printf("Offset:%d Entries to Read:%d\n",bufferOffset,entriesToRead);
+  	  status = clEnqueueReadBuffer(
+		commandQueue,
+		cartesian_buf,
+		CL_FALSE,
+		0,
+		entriesToRead * sizeof(cl_double8),
+		cartesian + bufferOffset,
+		0,
+		NULL,
+		&read_events[0]);
+
+	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
+	
+	status = clEnqueueReadBuffer(
+		commandQueue,
+		barycentric_buf,
+		CL_FALSE,
+		0,
+		entriesToRead * sizeof(cl_double4),
+		barycentric+ bufferOffset,
+		0,
+		NULL,
+		&read_events[1]);
+
+	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
+	
+	
+	status = clEnqueueReadBuffer(
+		commandQueue,
+		parametric_buf,
+		CL_FALSE,
+		0,
+		entriesToRead * sizeof(cl_double2),
+		parametric+ bufferOffset,
+		0,
+		NULL,
+		&read_events[2]);
+
+	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
+	
+	status = clWaitForEvents(3, read_events);
+	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer calls to finish.\n");
+  
+}
 
 //OpenCL related initialization 
 //Create Context, Device list, Command Queue
-void initializeCL()
+void initializeCL(int deviceNum)
 {
 	size_t deviceListSize;
 	//Identify available platforms and select one
@@ -708,7 +597,7 @@ void initializeCL()
 		&status);
 	if(status != CL_SUCCESS) exitOnError(" Creating Context. (clCreateContextFromType).");
 
-	/* First, get the size of device list data */
+	//First, get the size of device list data
 	status = clGetContextInfo(context, 
 		CL_CONTEXT_DEVICES, 
 		0, 
@@ -716,11 +605,11 @@ void initializeCL()
 		&deviceListSize);
 	if(status != CL_SUCCESS) exitOnError(" Error: Getting Context Info(device list size, clGetContextInfo).");
 
-	// Detect OpenCL devices
+	//Detect OpenCL devices
 	devices = (cl_device_id *)malloc(deviceListSize);
 	if(devices == 0) exitOnError(" Error: No devices found.");
 
-	/* Now, get the device list data */
+	//Now, get the device list data
 	status = clGetContextInfo(
 		context, 
 		CL_CONTEXT_DEVICES, 
@@ -729,7 +618,7 @@ void initializeCL()
 		NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting Context Info (device list, clGetContextInfo).");
 
-	// Create an OpenCL command queue
+	//Create an OpenCL command queue
 	commandQueue = clCreateCommandQueue(
 		context, 
 		devices[0], 
@@ -738,30 +627,64 @@ void initializeCL()
 	if(status != CL_SUCCESS) exitOnError("Creating Command Queue. (clCreateCommandQueue).");
 	
 	//Identify the target device
-
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_NAME,MAX_NAME_LENGTH,deviceName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number(clGetDeviceInfo)");
 	
-	//Identify the device's vendor (used to set threadsPerWavefront)
+	printf("Using Device:%s\n",deviceName);
+	
+	//Identify the device's vendor (used to set threadsPerWorkgroup)
 	char deviceVendorName[MAX_NAME_LENGTH];
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH,deviceVendorName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device vendor's name for given device number(clGetDeviceInfo)");
 	
-	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerWavefront = 64;
-	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerWavefront = 32;
+	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerWorkgroup = 64;
+	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerWorkgroup = 32;
  
 }
 
+//Converts the contents of a file into a string
+//Used to feed kernel source code to the OpenCL Compiler
+std::string convertToString(const char *filename)
+{
+	size_t size;
+	char*  str;
+	std::string s;
+
+	std::fstream f(filename, (std::fstream::in | std::fstream::binary));
+
+	if(f.is_open())
+	{
+		size_t fileSize;
+		f.seekg(0, std::fstream::end);
+		size = fileSize = f.tellg();
+		f.seekg(0, std::fstream::beg);
+
+		str = new char[size+1];
+		if(!str)
+		{
+			f.close();
+			return NULL;
+		}
+
+		f.read(str, fileSize);
+		f.close();
+		str[size] = '\0';
+
+		s = str;
+		delete[] str;
+		return s;
+	}
+	return "NULL";
+}
 
 //Load CL file, compile, link CL source
 //Try to find a precompiled binary
 //Build program and kernel objects	
-void makeCLKernel(const char *kernelName)
+void makeCLKernel(const char *kernelName,int deviceNum)
 {
 	//Kernel Loading/Compilation		
-	printf("Using Device:%s\n",deviceName);
 	
-	//Attempt to load precompiled bianry file for target device
+	//Attempt to load precompiled binary file for target device
 	char binFileName[MAX_NAME_LENGTH];
 	sprintf(binFileName,"%s_%s.elf",kernelName,deviceName);
 	std::fstream inBinFile(binFileName, (ios::in|ios::binary|ios::ate));
@@ -869,10 +792,10 @@ void makeCLKernel(const char *kernelName)
 	
 }
 
-
+//Dumps a compiled kernel to a binary file
 void dumpBinary(cl_program program,const char * kernelName)
 {
- 	//Dump a compiled kernel to a binary file
+ 	
 	//Get number of devices
 	cl_uint deviceCount = 0;
 	status = clGetProgramInfo(program,CL_PROGRAM_NUM_DEVICES,sizeof(cl_uint),&deviceCount,NULL);
@@ -886,7 +809,7 @@ void dumpBinary(cl_program program,const char * kernelName)
 	char **bin = ( char**)malloc(sizeof(char*)*deviceCount);
 	for(cl_uint i = 0;i<deviceCount;i++) bin[i] = (char*)malloc(binSize[i]);
 
-	//Retrive compiled binaries
+	//Retrieve compiled binaries
 	status = clGetProgramInfo(program,CL_PROGRAM_BINARIES,sizeof(binSize),bin,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting program binaries(clGetProgramInfo)");
 
@@ -906,7 +829,7 @@ void dumpBinary(cl_program program,const char * kernelName)
 	}
 }
 
-
+//Releases all CL objects
 void cleanupCL(void)
 {
 
@@ -974,7 +897,7 @@ void cleanupCL(void)
 }
 
 
-//Releases program's resources 
+//Releases all objects created in host memory (input and output arrays)
 void cleanupHost(void)
 {
 #if defined (_WIN32)
@@ -1073,12 +996,10 @@ void cleanupHost(void)
 		parametric = NULL;
 	}
 #endif
-
-
 	
 }
 
-
+//Prints error messages with corresponding CL Status codes
 void exitOnError(const char *error_text)
 {
 	fprintf(stderr,"Error:%s\n",error_text);
