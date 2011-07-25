@@ -414,169 +414,7 @@ void allocateBuffers(void)
 		(void *)&parametric_buf);
 	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
 
-<<<<<<< HEAD
-	//Break up kernel execution to 1 exec per DEVICE_WORK_ITEMS_PER_LAUNCH work items.
-	cl_uint remaining_width = paddedWidth;
-	cl_uint buffer_offset = 0;
-	
-	for(cl_int i = 0;i<paddedWidth;i++)
-	{
-	  printf("Input %d\n",i);
-	  printf("%f\t%f\t%f\n",origin[i].s[0],origin[i].s[1],origin[i].s[2]);
-	  printf("%f\t%f\t%f\n",dir[i].s[0],dir[i].s[1],dir[i].s[2]);
-	  printf("%f\t%f\t%f\n",vert0[i].s[0],vert0[i].s[1],vert0[i].s[2]);
-	  printf("%f\t%f\t%f\n",vert1[i].s[0],vert1[i].s[1],vert1[i].s[2]);
-	  printf("%f\t%f\t%f\n",vert2[i].s[0],vert2[i].s[1],vert2[i].s[2]);
-	  printf("%f\t%f\t%f\n",vert3[i].s[0],vert3[i].s[1],vert3[i].s[2]);	  
-	}
-		
-	while(remaining_width > DEVICE_WORK_ITEMS_PER_LAUNCH)
-	{	  
-	  	status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  orig_buf,
-		  CL_TRUE,
-		  0,
-		  sizeof(cl_double4) * bufferWidth,
-		  origin + buffer_offset,
-		  0,
-		  NULL,
-		  NULL); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (orig_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  dir_buf,
-		  CL_TRUE,
-		  0,
-		  sizeof(cl_double4) * bufferWidth,
-		  dir + buffer_offset,
-		  0,
-		  NULL,
-		  NULL); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (dir_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert0_buf,
-		  CL_TRUE,
-		  0,
-		  sizeof(cl_double4) * bufferWidth,
-		  vert0 + buffer_offset,
-		  0,
-		  NULL,
-		  NULL); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert0_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert1_buf,
-		  CL_TRUE,
-		  0,
-		  sizeof(cl_double4) * bufferWidth,
-		  vert1 + buffer_offset,
-		  0,
-		  NULL,
-		  NULL); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert1_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert2_buf,
-		  CL_TRUE,
-		  0,
-		  sizeof(cl_double4) * bufferWidth,
-		  vert2 + buffer_offset,
-		  0,
-		  NULL,
-		  NULL); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert2_buf)");
-	
-		status = clEnqueueWriteBuffer(
-		  commandQueue,
-		  vert3_buf,
-		  CL_TRUE,
-		  0,
-		  sizeof(cl_double4) * bufferWidth,
-		  vert3 + buffer_offset,
-		  0,
-		  NULL,
-		  NULL); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
-	
-	
-	  //Enqueue a kernel run call.	
-	  globalThreads[0] = DEVICE_WORK_ITEMS_PER_LAUNCH;
-	
-	  status = clEnqueueNDRangeKernel(
-		  commandQueue,
-		  kernel,
-		  1,
-		  NULL,
-		  globalThreads,
-		  localThreads,
-		  0,
-		  NULL,
-		  &exec_events[0]);
-	  if(status != CL_SUCCESS) exitOnError("Enqueueing kernel onto command queue.(clEnqueueNDRangeKernel)"); 
 
-	
-	  status = clWaitForEvents(1,&exec_events[0]);
-	  if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
-
-	  
-	  status = clEnqueueReadBuffer(
-		commandQueue,
-		cartesian_buf,
-		CL_TRUE,
-		0,
-		bufferWidth * sizeof(cl_double8),
-		cartesian + buffer_offset,
-		0,
-		NULL,
-		NULL);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	status = clEnqueueReadBuffer(
-		commandQueue,
-		barycentric_buf,
-		CL_TRUE,
-		0,
-		bufferWidth * sizeof(cl_double4),
-		barycentric+ buffer_offset,
-		0,
-		NULL,
-		NULL);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	
-	status = clEnqueueReadBuffer(
-		commandQueue,
-		parametric_buf,
-		CL_TRUE,
-		0,
-		bufferWidth * sizeof(cl_double2),
-		parametric+ buffer_offset,
-		0,
-		NULL,
-		NULL);
-
-	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-	
-	 remaining_width -= DEVICE_WORK_ITEMS_PER_LAUNCH;
-	 buffer_offset += DEVICE_WORK_ITEMS_PER_LAUNCH;
-	  
-	}
-		
-	//Final kernel run call for remaining work_items
-	globalThreads[0] = remaining_width;
-	printf("Running kernel with work_items:%zu\n",globalThreads[0]);
-	
-		 status = clEnqueueWriteBuffer(
-=======
   
 }
 
@@ -586,7 +424,6 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
   //printf("Offset:%d Entries to Write:%d Buffer Width:%d\n",bufferOffset,entriesToWrite,buffer_width);
   
 		status = clEnqueueWriteBuffer(
->>>>>>> aligned
 		  commandQueue,
 		  orig_buf,
 		  CL_TRUE,
@@ -649,45 +486,14 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  vert3_buf,
-<<<<<<< HEAD
 		  CL_TRUE,
-		  0,
-		  sizeof(cl_double4) * remaining_width,
-		  vert3 + buffer_offset,
-		  0,
-		  NULL,
-		  NULL); 				  
-	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
-	
-	
-	status = clEnqueueNDRangeKernel(
-		commandQueue,
-		kernel,
-		1,
-		NULL,
-		globalThreads,
-		localThreads,
-		0,
-		NULL,
-		&exec_events[0]);
-	if(status != CL_SUCCESS) exitOnError("Enqueueing kernel onto command queue.(clEnqueueNDRangeKernel)"); 
-
-	
-	status = clWaitForEvents(1,&exec_events[0]);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
-=======
-		  CL_FALSE,
 		  0,
 		  sizeof(cl_double4) * buffer_width,
 		  vert3 + bufferOffset,
 		  0,
 		  NULL,
-		  &write_events[5]); 				  
+		  NULL); 				  
 	if(status != CL_SUCCESS) exitOnError("Writing to input buffer. (vert3_buf)");
->>>>>>> aligned
-	
-	status = clWaitForEvents(6, write_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for write buffer calls to finish.\n");
   
 }
 
@@ -734,140 +540,6 @@ void readBuffers(cl_uint bufferOffset,cl_uint entriesToRead)
 		NULL);
 
 	if(status != CL_SUCCESS) exitOnError("clEnqueueReadBuffer failed.(clEnqueueReadBuffer)\n");
-	
-<<<<<<< HEAD
-
-}
-
-void allocateInput(int actualWidth)
-{
-	
-	//Determine the amount of false entries to pad the input arrays with.
-	//Create a workgroup size of threadsPerGroup 
-	if((actualWidth % threadsPerGroup) != 0) paddedWidth = actualWidth + (threadsPerGroup - (actualWidth % threadsPerGroup));
-	else paddedWidth = actualWidth;
-	
-	printf("actualWidth:%d\n",actualWidth);
-	printf("paddedWidth:%d\n",paddedWidth);
-		
-	//Input Arrays
-	origin = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
-	if(origin == NULL) exitOnError("Failed to allocate input memory on host(origin)");
-
-	dir = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
-	if(dir == NULL) exitOnError("Failed to allocate input memory on host(dir)");
-
-	vert0 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
-	if(vert0 == NULL) exitOnError("Failed to allocate input memory on host(vert0)");
-
-	vert1 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
-	if(vert1 == NULL) exitOnError("Failed to allocate input memory on host(vert1)");
-
-	vert2 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
-	if(vert2 == NULL) exitOnError("Failed to allocate input memory on host(vert2)");
-
-	vert3 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
-	if(vert3 == NULL) exitOnError("Failed to allocate input memory on host(vert3)");
-
-	//Output Arrays
-	cartesian = (cl_double8*)malloc(paddedWidth * sizeof(cl_double8));
-	if(cartesian == NULL) exitOnError("Failed to allocate output memory on host(cartesian)");
-	
-	barycentric = (cl_double4*)malloc(paddedWidth * sizeof(cl_double4));
-	if(barycentric == NULL) exitOnError("Failed to allocate output memory on host(barycentric)");
-	
-	parametric = (cl_double2*)malloc(paddedWidth * sizeof(cl_double2));
-	if(parametric == NULL) exitOnError("Failed to allocate output memory on host(parametric)");
-	
-}
-
-void allocateBuffers(void)
-{
-	//Create Input/Output buffers
-
-	bufferWidth = (paddedWidth <= DEVICE_WORK_ITEMS_PER_LAUNCH) ? paddedWidth:DEVICE_WORK_ITEMS_PER_LAUNCH;
-	printf("bufferWidth:%d\n",bufferWidth);
-
-	// Create OpenCL memory buffers
-	//Input buffers
-	orig_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * bufferWidth,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(orig)"); 
-
-	dir_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * bufferWidth,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(dir)"); 
-
-
-	vert0_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * bufferWidth,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert0)"); 
-
-	vert1_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * bufferWidth,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert1)");
-
-	vert2_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * bufferWidth,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert2)"); 
-
-	vert3_buf = clCreateBuffer(
-		context, 
-		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * bufferWidth,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert3)"); 
-
-	//Output buffers
-	cartesian_buf = clCreateBuffer(
-		context, 
-		CL_MEM_WRITE_ONLY,
-		sizeof(cl_double8) * bufferWidth,
-		NULL, 
-		&status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(cartesian_buf)");
-
-	barycentric_buf = clCreateBuffer(
-	  context, 
-	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double4) * bufferWidth,
-	  NULL, 
-	  &status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(barycentric_buf)");
-
-	parametric_buf = clCreateBuffer(
-	  context, 
-	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double2) * bufferWidth,
-	  NULL, 
-	  &status);
-	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");
-
-=======
-	status = clWaitForEvents(3, read_events);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for read buffer calls to finish.\n");
->>>>>>> aligned
   
 }
 
@@ -957,15 +629,10 @@ void initializeCL(int deviceNum)
 	char deviceVendorName[MAX_NAME_LENGTH];
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH,deviceVendorName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device vendor's name for given device number(clGetDeviceInfo)");
-	
-<<<<<<< HEAD
-	//Set the number of threads per workgroup according to manufacturer's  specs
-	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerGroup = 64;
-	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerGroup = 32;
-=======
+
 	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerWorkgroup = 64;
 	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerWorkgroup = 32;
->>>>>>> aligned
+
  
 }
 
