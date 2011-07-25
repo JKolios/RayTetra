@@ -95,7 +95,7 @@ void runCLKernelsWithIO(void)
 	  writeBuffers(bufferOffset,WORK_ITEM_LIMIT);
 	  //Enqueue a kernel run call.	
 	  globalThreads[0] = WORK_ITEM_LIMIT;
-	  printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
+	  //printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
 	  status = clEnqueueNDRangeKernel(
 		  commandQueue,
 		  kernel,
@@ -124,7 +124,7 @@ void runCLKernelsWithIO(void)
 	
 	writeBuffers(bufferOffset,remainingWidth);
 		
-	printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
+	//printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
 		kernel,
