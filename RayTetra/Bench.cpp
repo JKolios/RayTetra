@@ -392,7 +392,7 @@ int main(int argc, char* argv[])
     readBuffers(0,padded_width);       
     timerGPUSTP2Read.Stop();
     
-    resultsFile << timerGPUSTP2Read.TotalElapsedTime()<< std::endl;
+    resultsFile << timerGPUSTP2Read.TotalElapsedTime();
     std::cout << "Buffer Read: " << timerGPUSTP2Read.TotalElapsedTime() << std::endl;
     
     

@@ -27,6 +27,7 @@ struct ProgramArguments
     int displayResult;
     bool gpuNeeded;
     const char *gpuAlgName;
+        
 };
 
 

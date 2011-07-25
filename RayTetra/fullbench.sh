@@ -26,7 +26,7 @@ let  "LIMIT = 100/$GRANULARITY"
 
 rm -f $OUTPUT_FILE
 
-echo ,Haines,Moller1,Moller2,Moller3,Segura0,Segura1,Segura2,STP0,STP1,STP2,GPU_Segura0,GPU_STP0,GPU_STP1,GPU_STP2>>$OUTPUT_FILE
+echo Intersecting_Pairs,Haines,Moller1,Moller2,Moller3,Segura0,Segura1,Segura2,STP0,STP1,STP2,GPU_Segura0_Write,GPU_Segura0,GPU_Segura0_Read,GPU_STP0_Write,GPU_STP0,GPU_STP0_Read,GPU_STP1_Write,GPU_STP1,GPU_STP1_Read,GPU_STP2_Write,GPU_STP2,GPU_STP2_Read>>$OUTPUT_FILE
 
 for ((a=0; a <= LIMIT ; a++)) 
 do
