@@ -249,7 +249,7 @@ int main(int argc, char* argv[])
     }
     	       
     timerSTP2.Stop();
-    resultsFile << timerSTP2.TotalElapsedTime();
+    resultsFile << timerSTP2.TotalElapsedTime() << ",";
     std::cout << timerSTP2.TotalElapsedTime() << std::endl;
     
     std::cout << "Setting up GPU...  "; 

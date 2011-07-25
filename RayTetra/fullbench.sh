@@ -19,24 +19,25 @@ INTERSECTING=0
 NONINTERSECTING=$1
 GRANULARITY=$3
 CURRENT_PERCENTAGE=0
+OUTPUT_FILE=output_$1_$2_$3.csv
 
 let  "STEP = $NONINTERSECTING/(100/$GRANULARITY)"
 let  "LIMIT = 100/$GRANULARITY"
 
-rm -f output.csv
+rm -f $OUTPUT_FILE
 
-echo Haines,Moller1,Moller2,Moller3,Segura0,Segura1,Segura2,STP0,STP1,STP2,GPU_Segura0,GPU_STP0,GPU_STP1,GPU_STP2>>output.csv
+echo ,Haines,Moller1,Moller2,Moller3,Segura0,Segura1,Segura2,STP0,STP1,STP2,GPU_Segura0,GPU_STP0,GPU_STP1,GPU_STP2>>$OUTPUT_FILE
 
 for ((a=0; a <= LIMIT ; a++)) 
 do
-  echo -n $a, >>output.csv
+  echo -n $INTERSECTING, >> $OUTPUT_FILE
   
   echo  
   echo "Benchmarking for "$CURRENT_PERCENTAGE"% intersection rate."
 
-  ./RandomRayTetra input$a -i $INTERSECTING -n $NONINTERSECTING
+  ./RandomRayTetra input$CURRENT_PERCENTAGE -i $INTERSECTING -n $NONINTERSECTING
   
-  ./Bench input$a output.csv $2 
+  ./Bench input$CURRENT_PERCENTAGE $OUTPUT_FILE $2 
   let "INTERSECTING+=$STEP"
   let "NONINTERSECTING+=-$STEP"
   let  "CURRENT_PERCENTAGE += $GRANULARITY"  
