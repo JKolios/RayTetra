@@ -1,13 +1,20 @@
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#ifdef cl_khr_fp64
+    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
+#ifdef cl_amd_fp64
+    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
+
 
 //Section 3.3 Modifications added
 __kernel void RayTetraSTP2(
-				__constant double4* orig,
-				__constant double4* dest,
-				__constant double4* vert0,
-				__constant double4* vert1,
-				__constant double4* vert2,
-				__constant double4* vert3,
+				__global double4* orig,
+				__global double4* dest,
+				__global double4* vert0,
+				__global double4* vert1,
+				__global double4* vert2,
+				__global double4* vert3,
 				__global double8* cartesian,
 				__global double4* barycentric,
 				__global double2* parametric)
