@@ -85,7 +85,7 @@ void initializeCL(int);
 void makeCLKernel(const char*,int);
 
 //Input Processing
-void allocateInput(int);
+void allocateInput(int,int);
 
 //Input/output buffer allocation
 void allocateBuffers(void);

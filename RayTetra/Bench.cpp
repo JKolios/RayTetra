@@ -23,6 +23,7 @@ struct ProgramArguments
     char* inputFileName;
     char* outputFileName;
     unsigned int repetitions;
+    int deviceNum;
 };
 
 
@@ -255,9 +256,9 @@ int main(int argc, char* argv[])
     std::cout << "Setting up GPU...  "; 
     
     //GPU Segura0 Benchmark
-    initializeCL(0);
-    makeCLKernel("RayTetraSegura0",0);
-    allocateInput(nTests);
+    initializeCL(arguments.deviceNum);
+    makeCLKernel("RayTetraSegura0",arguments.deviceNum);
+    allocateInput(nTests,arguments.deviceNum);
     fillGPUInput(nTests,v,orig,dest);
     allocateBuffers();
 
@@ -292,9 +293,9 @@ int main(int argc, char* argv[])
     
 
     //GPU STP0 Benchmark
-    initializeCL(0);
-    makeCLKernel("RayTetraSTP0",0);
-    allocateInput(nTests);
+    initializeCL(arguments.deviceNum);
+    makeCLKernel("RayTetraSTP0",arguments.deviceNum);
+    allocateInput(nTests,arguments.deviceNum);
     fillGPUInput(nTests,v,orig,dest);
     allocateBuffers();
 
@@ -328,9 +329,9 @@ int main(int argc, char* argv[])
     cleanupHost();
 
     //GPU STP1 Benchmark
-    initializeCL(0);
-    makeCLKernel("RayTetraSTP1",0);
-    allocateInput(nTests);
+    initializeCL(arguments.deviceNum);
+    makeCLKernel("RayTetraSTP1",arguments.deviceNum);
+    allocateInput(nTests,arguments.deviceNum);
     fillGPUInput(nTests,v,orig,dest);
     allocateBuffers();
 
@@ -364,9 +365,9 @@ int main(int argc, char* argv[])
     cleanupHost();
     
     //GPU STP2 Benchmark
-    initializeCL(0);
-    makeCLKernel("RayTetraSTP2",0);
-    allocateInput(nTests);
+    initializeCL(arguments.deviceNum);
+    makeCLKernel("RayTetraSTP2",arguments.deviceNum);
+    allocateInput(nTests,arguments.deviceNum);
     fillGPUInput(nTests,v,orig,dest);
     allocateBuffers();
 
@@ -413,14 +414,16 @@ int main(int argc, char* argv[])
 
 bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
 {
-    if (argc != 4)  {
+    if ((argc < 4) || (argc > 5))  {
         PrintHelp(argv[0]);
         return false;
     }
-
+    
     arguments.inputFileName = argv[1];
     arguments.outputFileName = argv[2];
     arguments.repetitions = std::atoi(argv[3]);
+    arguments.deviceNum = 0;
+    if(argc == 5) arguments.deviceNum = std::atoi(argv[4]);
 
     return true;
 }
@@ -430,7 +433,12 @@ bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
 void PrintHelp(char* argv0)
 {
     std::cerr << std::endl << "Usage: " << argv0 
-              << " <input file> <output file> <repetitions>" << std::endl;
+              << " <input file> <output file> <repetitions> [OpenCL Device Number]" << std::endl;
+    std::cerr << " Optional argument [OpenCL Device Number]:"<< std::endl;
+    std::cerr << "\t	Use OpenCl device number i for GPU algorithms."
+              << std::endl << "\t	Provided for systems with multiple OpenCL compatible devices"<< std::endl
+              << "\t	Device numbers are positive integers >=0." << std::endl
+              << "\t	Default value is 0 which signifies the first GPU identified by the OpenCl platform." << std::endl;	
 }
 
 //Converts input data to a format suitable for GPU calc

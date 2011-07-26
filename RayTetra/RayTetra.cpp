@@ -27,6 +27,7 @@ struct ProgramArguments
     int displayResult;
     bool gpuNeeded;
     const char *gpuAlgName;
+    int deviceNum;
         
 };
 
@@ -141,6 +142,8 @@ int main(int argc, char* argv[])
         std::vector<double> ue1(nTests), ue2(nTests), ul1(nTests), ul2(nTests);
         std::vector<double> tEnter(nTests), tLeave(nTests);
         std::vector<bool> result(nTests);
+	
+	NpProgramTimer timer;
 
         for (int i = 0; i < nTests; ++i)  {
             dataFile >> v[i][0] >> v[i][1] >> v[i][2] >> v[i][3] 
@@ -148,11 +151,12 @@ int main(int argc, char* argv[])
         }
         
         //If a GPU algorithm has been selected, initialise the GPU
-        if(arguments.gpuNeeded) {
+        if(arguments.gpuNeeded) 
+	{
 	  	
-		initializeCL(0);
-		makeCLKernel(arguments.gpuAlgName,0);
-		allocateInput(nTests);
+		initializeCL(arguments.deviceNum);
+		makeCLKernel(arguments.gpuAlgName,arguments.deviceNum);
+		allocateInput(nTests,arguments.deviceNum);
 		allocateBuffers();
 	
 		// Converting input to raytetragpu's input format
@@ -191,15 +195,14 @@ int main(int argc, char* argv[])
 			dir[i].s[3] = 0.0;
 
 		}
-	}
+	
 
         NpProgramTimer timer;
 	timer.Start();
-        for (unsigned int r = 0; r < arguments.repetitions; ++r)  {
-          if(arguments.gpuNeeded){  
-	    
-	    runCLKernelsWithIO();	    
-	    for(int j=0;j < nTests;++j)
+        for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernelsWithIO();
+	timer.Stop();
+	
+	for(int j=0;j < nTests;++j)
 	    {
 	      result[j] = true ? ((cartesian[j].s[0] != -1) &&(cartesian[j].s[1] != -1)) : false;
 	      if(result[j])
@@ -219,24 +222,27 @@ int main(int argc, char* argv[])
 	    }
 	    
 	}
-	
+
 	cleanupHost();
 	cleanupCL();
 	    	    
 	  }else{
-	  for (int i = 0; i < nTests; ++i)  {
+	    
+	    timer.Start();
+	    for (int i = 0; i < nTests; ++i)  {
 	    result[i] = arguments.algorithm(orig[i], (dest[i]-orig[i]),
                                                 v[i],
                                                 enterFace[i], leaveFace[i],
                                                 enterPoint[i], leavePoint[i],
                                                 ue1[i], ue2[i], ul1[i], ul2[i],
                                                 tEnter[i], tLeave[i]);
-
+	    timer.Stop();
 	    
+	    }
 	  }
-            }
-        }
-        timer.Stop();
+            
+        
+        
 
         if ((arguments.print == 1)  ||  (arguments.print == 3))  {
             resultsFile << timer.TotalElapsedTime() << std::endl;
@@ -256,8 +262,9 @@ int main(int argc, char* argv[])
                 resultsFile << std::endl;
             }
         }
-    }
-    else  {
+    
+      
+    }else{
         // Only process and display the result asked for
         if (arguments.displayResult > nTests)  {
             std::cout << "The line to display must be <= " << nTests <<std::endl;
@@ -275,9 +282,9 @@ int main(int argc, char* argv[])
         dataFile >> v[0] >> v[1] >> v[2] >> v[3] >> orig >> dest;
 	
 		if(arguments.gpuNeeded) {
-			initializeCL(0);
-			makeCLKernel(arguments.gpuAlgName,0);
-			allocateInput(1);
+			initializeCL(arguments.deviceNum);
+			makeCLKernel(arguments.gpuAlgName,arguments.deviceNum);
+			allocateInput(1,arguments.deviceNum);
 			allocateBuffers();
 
 			vert0[0].s[0] = v[0].x;
@@ -369,8 +376,9 @@ bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
     arguments.print = 3;
     arguments.displayResult = -1;
     arguments.gpuNeeded = false;
+    arguments.deviceNum = 0;
     
-    const char* short_options = "m:a:s:t:g:p:d:h";
+    const char* short_options = "m:a:s:t:g:p:d:hn:";
 
     bool stop = false;
     bool foundAlg = false;
@@ -397,7 +405,7 @@ bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
                 stop = 0;
             }
         }
-        else if (((c == 'm') || (c == 'a') || (c == 's')|| (c == 'u'))  &&
+        else if (((c == 'm') || (c == 'a') || (c == 's')|| (c == 'u')|| (c == 't')|| (c == 'g'))  &&
                  foundAlg)  {
             // Multiple algorithms given
             foundAlg = false;   // To signal the error
@@ -491,6 +499,13 @@ bool ParseArgs(int argc, char* argv[], ProgramArguments& arguments)
             stop = true;
             foundAlg = false;
         }
+        else if (c == 'n')  {	  
+	arguments.deviceNum = std::atoi(optarg);
+	if (arguments.deviceNum < 0) {
+	    std::cout << "Device numbers are positive integers >= 0" << std::endl;
+	    return false;
+	}
+        }
         else if (c == '?')  {
             // Unsupported option
             std::cerr << "Unsupported option '" << char(optopt) << "'" 
@@ -562,6 +577,11 @@ void PrintHelp(char* argv0)
     std::cerr << "\t-d i: Only compute and display line i of the input file."
               << std::endl << "\t      In this case <output file> and "
               << "<repetitions> are ignored." << std::endl;
+    std::cerr << "\t-n i: Use OpenCl device number i for GPU algorithms."
+              << std::endl << "\t      Provided for systems with multiple OpenCL compatible devices"<< std::endl
+              << "\t      Device numbers are positive integers >=0." << std::endl
+              << "\t      Ignored if used without the -g algorithm option." << std::endl
+              << "\t      Default value is 0 which signifies the first GPU identified by the OpenCl platform." << std::endl;	      
 }
 
 

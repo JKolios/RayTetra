@@ -58,7 +58,6 @@
 //64 for AMD GPUs, a multiple of 32 determined at runtime for Nvidia GPUs, ignored for CPUs
 size_t threadsPerWorkgroup = 1;
 
-
 //Device Name string
 //Used to select between precompiled kernels
 char deviceName[MAX_NAME_LENGTH];
@@ -75,7 +74,6 @@ cl_event exec_events[1];//Tracking kernel execution
 //Handles buffer IO
 void runCLKernelsWithIO(void)
 {
-		
 	size_t globalThreads[1];
 	size_t localThreads[1];
 		
@@ -108,7 +106,7 @@ void runCLKernelsWithIO(void)
 
 	
 	  status = clWaitForEvents(1,&exec_events[0]);
-	  if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
+	  if(status != CL_SUCCESS) exitOnError("Waiting for kernel run to finish.(clWaitForEvents)");
 	  
 	  readBuffers(bufferOffset,WORK_ITEM_LIMIT);
 	
@@ -137,7 +135,7 @@ void runCLKernelsWithIO(void)
 
 	
 	status = clWaitForEvents(1,&exec_events[0]);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
+	if(status != CL_SUCCESS) exitOnError("Waiting for kernel run to finish.(clWaitForEvents)");
 	
 	readBuffers(bufferOffset,remainingWidth);
 
@@ -168,11 +166,11 @@ void runCLKernels(void)
 
 	
 	status = clWaitForEvents(1,&exec_events[0]);
-	if(status != CL_SUCCESS) exitOnError(" Waiting for kernel run to finish.(clWaitForEvents)");
+	if(status != CL_SUCCESS) exitOnError("Waiting for kernel run to finish.(clWaitForEvents)");
 }
 
 //Determines the size of the input arrays needed and allocates them
-void allocateInput(int actual_width)
+void allocateInput(int actual_width,int deviceNum)
 {
 	//The size of the input arrays and buffers must be a multiple of the workgroup size
 	if(threadsPerWorkgroup == 32)
@@ -182,7 +180,7 @@ void allocateInput(int actual_width)
 	    size_t maxGroupSize;
       
 	    status = clGetKernelWorkGroupInfo(kernel, 
-					  devices[0], 
+					  devices[deviceNum], 
 					  CL_KERNEL_WORK_GROUP_SIZE,
 					  sizeof(size_t),
 					  &maxGroupSize, 
@@ -567,7 +565,7 @@ void initializeCL(int deviceNum)
 				sizeof(pbuff),
 				pbuff,
 				NULL);
-			if(status != CL_SUCCESS) exitOnError(" Getting Platform Info. (clGetPlatformInfo)");
+			if(status != CL_SUCCESS) exitOnError("Getting Platform Info. (clGetPlatformInfo)");
 			platform = platforms[i];
 			//AMD or Nvidia Platforms are preferred
 			//If none of them are found the first available platform is used
@@ -578,17 +576,17 @@ void initializeCL(int deviceNum)
 		}
 		delete platforms;
 	}
-	if(NULL == platform) exitOnError(" NULL platform found.");
+	if(NULL == platform) exitOnError("NULL platform found.");
 
 	cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
 
 	// Create an OpenCL context
 	context = clCreateContextFromType(cps, 
-		CL_DEVICE_TYPE_GPU, 
+		CL_DEVICE_TYPE_ALL, 
 		NULL, 
 		NULL, 
 		&status);
-	if(status != CL_SUCCESS) exitOnError(" Creating Context. (clCreateContextFromType).");
+	if(status != CL_SUCCESS) exitOnError("Creating Context. (clCreateContextFromType).");
 
 	//First, get the size of device list data
 	status = clGetContextInfo(context, 
@@ -596,11 +594,12 @@ void initializeCL(int deviceNum)
 		0, 
 		NULL, 
 		&deviceListSize);
-	if(status != CL_SUCCESS) exitOnError(" Error: Getting Context Info(device list size, clGetContextInfo).");
+	if(status != CL_SUCCESS) exitOnError("Getting Context Info(device list size, clGetContextInfo).");
 
 	//Detect OpenCL devices
 	devices = (cl_device_id *)malloc(deviceListSize);
-	if(devices == 0) exitOnError(" Error: No devices found.");
+	if(deviceListSize == 0) exitOnError("No devices found.");
+	if((deviceListSize/sizeof(size_t)) < (deviceNum +1)) exitOnError("No device found for given device number.");
 
 	//Now, get the device list data
 	status = clGetContextInfo(
@@ -611,10 +610,10 @@ void initializeCL(int deviceNum)
 		NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting Context Info (device list, clGetContextInfo).");
 
-	//Create an OpenCL command queue
+	//Create an OpenCL command queue on the device with the given deviceNum
 	commandQueue = clCreateCommandQueue(
 		context, 
-		devices[0], 
+		devices[deviceNum], 
 		0, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Creating Command Queue. (clCreateCommandQueue).");
@@ -627,11 +626,17 @@ void initializeCL(int deviceNum)
 	
 	//Identify the device's vendor (used to set threadsPerWorkgroup)
 	char deviceVendorName[MAX_NAME_LENGTH];
-	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH,deviceVendorName,NULL);
+	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_VENDOR,MAX_NAME_LENGTH * sizeof(char),deviceVendorName,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device vendor's name for given device number(clGetDeviceInfo)");
-
-	if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerWorkgroup = 64;
-	if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerWorkgroup = 32;
+		
+	//Identify the device's type (used to set threadsPerWorkgroup)
+	cl_device_type deviceType;
+	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_TYPE,sizeof(cl_device_type),&deviceType,NULL);
+	if (status != CL_SUCCESS) exitOnError("Cannot get device type for given device number(clGetDeviceInfo)");
+	
+	if(deviceType == CL_DEVICE_TYPE_CPU) threadsPerWorkgroup = 1;
+	else if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerWorkgroup = 64;
+	else if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerWorkgroup = 32;
 
  
 }
@@ -686,7 +691,7 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 	//Compile
 	if(inBinFile.fail()) {
 		inBinFile.close();	
-		printf("No binary image found for specified kernel and device,compiling a new one.\n");
+		printf("No binary image found for specified kernel.Compiling from source.\n");
 	  
 		char sourceFileName[MAX_NAME_LENGTH]; 
 		sprintf(sourceFileName,"%s.cl",kernelName);
@@ -704,7 +709,7 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 		if(status != CL_SUCCESS) exitOnError("Loading Source into cl_program (clCreateProgramWithSource)");
 	
 		// create a cl program executable for all the devices specified 
-		status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
+		status = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
 		if (status != CL_SUCCESS) {
 		  
 		  //Build failed.
@@ -713,12 +718,12 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 		  //Retrieve the size of the build log
 		  char* build_log;
 		  size_t log_size;
-		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+		  status = clGetProgramBuildInfo(program, devices[deviceNum], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
 		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log size.(clGetProgramBuildInfo)");
 		  build_log = (char*)malloc(log_size+1);
 		  
 		  // Get and display the build log
-		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+		  status = clGetProgramBuildInfo(program, devices[deviceNum], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
 		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log.(clGetProgramBuildInfo)");
 		  build_log[log_size] = '\0';
 		  printf("%s\n",build_log);
@@ -740,8 +745,7 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 	  bin = new char[*binSize];
 	  inBinFile.read(bin,*binSize);
 	  inBinFile.close();
-	  
-	  
+	  	  
 	  program = clCreateProgramWithBinary(
 	    context, 
 	    1, 
@@ -751,10 +755,9 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 	    NULL,
 	   &status);
 	  if(status != CL_SUCCESS) exitOnError("Loading Binary into cl_program (clCreateProgramWithBinary)");
-	  
-	  
+	    
 	  // create a cl program executable for all the devices specified 
-	  status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
+	  status = clBuildProgram(program,1, &devices[deviceNum], NULL, NULL, NULL);
 	  if (status != CL_SUCCESS) {
 		  
 		  //Build failed.
@@ -763,12 +766,12 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 		  //Retrieve the size of the build log
 		  char* build_log;
 		  size_t log_size;
-		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+		  status = clGetProgramBuildInfo(program, devices[deviceNum], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
 		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log size.(clGetProgramBuildInfo)");
 		  build_log = (char*)malloc(log_size+1);
 		  
 		  // Get and display the build log
-		  status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+		  status = clGetProgramBuildInfo(program, devices[deviceNum], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
 		  if(status != CL_SUCCESS) exitOnError("Cannot get compiler log.(clGetProgramBuildInfo)");
 		  build_log[log_size] = '\0';
 		  printf("%s\n",build_log);
@@ -779,11 +782,11 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 		}
 
 	}
-
+	
 	// get a kernel object handle for a kernel with the given name 
 	kernel = clCreateKernel(program,kernelName,&status);
-	if(status != CL_SUCCESS) exitOnError(" Creating Kernel from program. (clCreateKernel)");
-	
+	if(status != CL_SUCCESS) exitOnError("Creating Kernel from program. (clCreateKernel)");
+
 }
 
 //Dumps a compiled kernel to a binary file
@@ -794,17 +797,17 @@ void dumpBinary(cl_program program,const char * kernelName)
 	cl_uint deviceCount = 0;
 	status = clGetProgramInfo(program,CL_PROGRAM_NUM_DEVICES,sizeof(cl_uint),&deviceCount,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting number of devices for the program(clGetProgramInfo)");
-
+	
 	//Get sizes of compiled binaries for said devices
 	size_t *binSize = (size_t*)malloc(sizeof(size_t)*deviceCount);
-	status = clGetProgramInfo(program,CL_PROGRAM_BINARY_SIZES,sizeof(binSize),binSize,NULL);
+	status = clGetProgramInfo(program,CL_PROGRAM_BINARY_SIZES,(sizeof(size_t)*deviceCount),binSize,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting binary sizes for the program(clGetProgramInfo)");
 
 	char **bin = ( char**)malloc(sizeof(char*)*deviceCount);
 	for(cl_uint i = 0;i<deviceCount;i++) bin[i] = (char*)malloc(binSize[i]);
 
 	//Retrieve compiled binaries
-	status = clGetProgramInfo(program,CL_PROGRAM_BINARIES,sizeof(binSize),bin,NULL);
+	status = clGetProgramInfo(program,CL_PROGRAM_BINARIES,(sizeof(size_t)*deviceCount),bin,NULL);
 	if(status != CL_SUCCESS) exitOnError("Getting program binaries(clGetProgramInfo)");
 
 	//Export binaries to files, appending CL_DEVICE_NAME to each filename
@@ -814,13 +817,14 @@ void dumpBinary(cl_program program,const char * kernelName)
 	  char deviceName[MAX_NAME_LENGTH];
 	  status = clGetDeviceInfo(devices[i],CL_DEVICE_NAME,MAX_NAME_LENGTH,deviceName,NULL);
 	  if (status != CL_SUCCESS) exitOnError("Cannot get device name for given device number");
-	  printf("Exporting Kernel for Device:%s\n",deviceName);
+	  printf("Binary image of kernel %s created for device %s.\n",kernelName,deviceName);
 	  sprintf(binFileName,"%s_%s.elf",kernelName,deviceName);
 	  std::fstream outBinFile(binFileName, (std::fstream::out | std::fstream::binary));
 	  if(outBinFile.fail()) exitOnError("Cannot open binary file");
 	  outBinFile.write(bin[i],binSize[i]);
 	  outBinFile.close();
 	}
+      for(cl_uint i = 0;i<deviceCount;i++) free(bin[i]);
 }
 
 //Releases all CL objects
@@ -840,13 +844,13 @@ void cleanupCL(void)
 	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (dir_buf)\n");
 
 	status = clReleaseMemObject(vert0_buf);
-	if(status != CL_SUCCESS) exitOnError("Error: In clReleaseMemObject (vert0_buf)\n");
+	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (vert0_buf)\n");
 
 	status = clReleaseMemObject(vert1_buf);
-	if(status != CL_SUCCESS) exitOnError("Error: In clReleaseMemObject (vert1_buf)\n");
+	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (vert1_buf)\n");
 
 	status = clReleaseMemObject(vert2_buf);
-	if(status != CL_SUCCESS) exitOnError("Error: In clReleaseMemObject (vert2_buf)\n");
+	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (vert2_buf)\n");
 
 	status = clReleaseMemObject(vert3_buf);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (vert3_buf)\n");
