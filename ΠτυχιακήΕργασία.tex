@@ -1,0 +1,49 @@
+% Εκτύπωση σε χαρτί A4, μία σελίδα ανά φύλλο, με ξεχωριστή σελίδα για τον τίτλο,
+% σε γραμματοσειρά 12pt και format άρθρου.
+\documentclass[a4paper,oneside,titlepage,12pt]{article}
+
+% Προσοχή στο [cm-default], χωρίς αυτό μπορεί να μην λειτουργούν τα
+% μαθηματικά σύμβολα σε ορισμένες εγκαταστάσεις του xelatex!
+\usepackage[cm-default]{fontspec}
+\usepackage{xunicode}
+\usepackage{xltxtra}
+
+% Γραμματοσειρά
+\setmainfont[Mapping=tex-text]{DejaVu Sans}
+
+% Χρήσιμο πακέτο για εισαγωγή εικόνων jpg/png ή άλλων εγγράφων pdf.
+\usepackage{graphicx}
+
+
+\title{Υλοποίηση και σύγκριση αλγορίθμων τομής ευθείας-τετραέδρου στην GPU}
+\author{Κολιός Απόστολος - Ιάσων}
+\date{11/9/2011} 
+
+\begin{document}
+
+\maketitle
+
+\renewcommand{\contentsname}{Περιεχόμενα}
+\tableofcontents
+
+
+
+\section{Τομή Ευθείας-Τετραέδρου}
+\subsection{Ορισμός Προβλήματος}
+\subsection{Αλγόριθμοι}
+
+\section{Υλοποίηση σε GPU}
+\subsection{Το μοντέλο επεξεργασίας GPGPU}
+\subsection{Στοιχεία Υλοποίησης}
+\subsection{Χρήση Προγράμματος}
+
+\section{Απόδοση}
+\subsection{Μεθοδολογία Μέτρησης Απόδοσης}
+\subsection{Αποτελέσματα Μετρήσεων}
+\subsection{Σύγκριση Απόδοσης}
+
+\section{Συμπεράσματα}
+
+
+
+\end{document}
