@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2010/Arch Linux)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: ΠτυχιακήΕργασία.aux
+The style file: alpha.bst
+Database file #1: citations.bib
+You've used 2 entries,
+            2543 wiz_defined-function locations,
+            572 strings with 4786 characters,
+and the built_in function-call counts, 701 in all, are:
+= -- 67
+> -- 27
+< -- 2
++ -- 8
+- -- 8
+* -- 50
+:= -- 125
+add.period$ -- 7
+call.type$ -- 2
+change.case$ -- 10
+chr.to.int$ -- 2
+cite$ -- 2
+duplicate$ -- 30
+empty$ -- 54
+format.name$ -- 11
+if$ -- 142
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 3
+newline$ -- 13
+num.names$ -- 6
+pop$ -- 10
+preamble$ -- 1
+purify$ -- 13
+quote$ -- 0
+skip$ -- 23
+stack$ -- 0
+substring$ -- 29
+swap$ -- 3
+text.length$ -- 2
+text.prefix$ -- 1
+top$ -- 0
+type$ -- 12
+warning$ -- 0
+while$ -- 6
+width$ -- 3
+write$ -- 28
