@@ -219,7 +219,7 @@ bool RayTetraSTP0(
   
   // If no intersecting face has been found so far, then there is none,
   // otherwise DCB (face0) is the remaining one
-  //STPs relevant to DCB:[QDC][QCB][QBD]
+  // STPs relevant to DCB:[QDC][QCB][QBD]
   if ((enterFace == -1)  &&  (leaveFace == -1))  {
     return false;
   }

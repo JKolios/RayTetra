@@ -18,8 +18,8 @@ echo "Usage: ./fullbench.sh TOTAL_PAIRS REPETITIONS GRANULARITY [OpenCL Device N
 echo
 echo "	Benchmarks all available algorithms for a given number of test pairs." 
 echo "	A series of benchmarks is performed for each algorithm.Each benchmark has a higher percentage of intersecting" 
-echo "	to non-intersecting pairs. This percentage starts at 0% and increases in every benchmark by a percentage equal to"
-echo "	GRANULARITY.For example, a granularity of 20 would result in 6 tests with percentages :0% 20% 40% 60% 80% 100%."
+echo "	to non-intersecting pairs. This percentage starts at 0% and increases in every benchmark by a percentage equal "
+echo "	to GRANULARITY.For example, a granularity of 20 would result in 6 tests with percentages :0% 20% 40% 60% 80% 100%."
 echo "	The optional argument [OpenCL Device Number] selects the OpenCL compatible device to use for GPU algorithms."
 echo "	Device numbers are positive integers >=0."
 echo "	Default value is 0 which signifies the first GPU identified by the OpenCl platform."

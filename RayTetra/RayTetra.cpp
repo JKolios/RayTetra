@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 		allocateInput(nTests,arguments.deviceNum);
 		allocateBuffers();
 	
-		// Converting input to raytetragpu's input format
+		// Converting input to gpuhandler's input format
 		for(int i = 0;i<nTests;i++)
 		{
 

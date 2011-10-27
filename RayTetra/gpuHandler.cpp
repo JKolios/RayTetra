@@ -11,7 +11,7 @@
 //Input data is stored here.
  cl_double4 *origin;//Ray Origin
  cl_double4 *dir;//Ray Direction
- cl_double4 *vert0;//Tetrahedron vertices
+ cl_double4 *vert0;//Tetrahedron vertices 0-3
  cl_double4 *vert1;
  cl_double4 *vert2;
  cl_double4 *vert3;
@@ -79,8 +79,6 @@ void runCLKernelsWithIO(void)
 		
 	localThreads[0]= threadsPerWorkgroup;  
 		
-
-
 	//Break up kernel execution to 1 exec per WORK_ITEM_LIMIT work items.
 	cl_uint remainingWidth = padded_width;
 	cl_uint bufferOffset = 0;
@@ -91,7 +89,7 @@ void runCLKernelsWithIO(void)
 	  writeBuffers(bufferOffset,WORK_ITEM_LIMIT);
 	  //Enqueue a kernel run call.	
 	  globalThreads[0] = WORK_ITEM_LIMIT;
-	  //printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
+	  
 	  status = clEnqueueNDRangeKernel(
 		  commandQueue,
 		  kernel,
@@ -120,7 +118,6 @@ void runCLKernelsWithIO(void)
 	
 	writeBuffers(bufferOffset,remainingWidth);
 		
-	//printf("globalthreads:%zu localthreads:%zu\n",globalThreads[0],localThreads[0]);
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
 		kernel,
@@ -474,7 +471,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  vert2_buf,
 		  CL_TRUE,
 		  0,
-		  sizeof(cl_double4) * buffer_width,
+		  sizeof(cl_double4) * entriesToWrite,
 		  vert2 + bufferOffset,
 		  0,
 		  NULL,
@@ -486,7 +483,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  vert3_buf,
 		  CL_TRUE,
 		  0,
-		  sizeof(cl_double4) * buffer_width,
+		  sizeof(cl_double4) * entriesToWrite,
 		  vert3 + bufferOffset,
 		  0,
 		  NULL,
