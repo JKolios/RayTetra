@@ -259,6 +259,35 @@ void allocateInput(int actual_width,int deviceNum)
 	status = posix_memalign((void**)&parametric,16,padded_width * sizeof(cl_double2));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(parametric)");
 
+	#else
+
+	origin = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	if(origin == NULL) exitOnError("Failed to allocate input memory on host(origin)");
+
+	dir = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	if(dir == NULL) exitOnError("Failed to allocate input memory on host(dir)");
+
+	vert0 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	if(vert0 == NULL) exitOnError("Failed to allocate input memory on host(vert0)");
+
+	vert1 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	if(vert1 == NULL) exitOnError("Failed to allocate input memory on host(vert1)");
+
+	vert2 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	if(vert2 == NULL) exitOnError("Failed to allocate input memory on host(vert2)");
+
+	vert3 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	if(vert3 == NULL) exitOnError("Failed to allocate input memory on host(vert3)");
+
+	//Output Arrays
+	cartesian = (cl_double8*)malloc(padded_width * sizeof(cl_double8));
+	if(cartesian == NULL) exitOnError("Failed to allocate output memory on host(cartesian)");
+	
+	barycentric = (cl_double4*)malloc(padded_width * sizeof(cl_double4));
+	if(barycentric == NULL) exitOnError("Failed to allocate output memory on host(barycentric)");
+	
+	parametric = (cl_double2*)malloc(padded_width * sizeof(cl_double2));
+	if(parametric == NULL) exitOnError("Failed to allocate output memory on host(parametric)");
 #endif
 	
 }
@@ -787,7 +816,7 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 }
 
 //Dumps a compiled kernel to a binary file
-void dumpBinary(cl_program program,const char * kernelName)
+void dumpBinary(cl_program program,const char *kernelName)
 {
  	
 	//Get number of devices

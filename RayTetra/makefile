@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -Wall -O2
+CXXFLAGS = -Wall -O2 -Wno-unused-but-set-variable
 LDLIBS = -L /usr/X11R6/lib -L $AMDAPPSDKROOT/lib/x86_64 -lGL -lGLU -lglut  -lOpenCL
 
 
