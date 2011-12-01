@@ -196,8 +196,6 @@ int main(int argc, char* argv[])
 
 		}
 	
-
-        NpProgramTimer timer;
 	timer.Start();
         for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernelsWithIO();
 	timer.Stop();

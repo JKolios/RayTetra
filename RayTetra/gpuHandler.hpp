@@ -5,7 +5,7 @@
 
 //The maximum number of work items to use per kernel execution
 //This helps avoid crashes due to insufficient GPU resources
-#define WORK_ITEM_LIMIT 910080
+#define WORK_ITEM_LIMIT 1500001
 
 //The maximum number of chars in a device name or binary filename created at runtime
 #define MAX_NAME_LENGTH 256
@@ -32,11 +32,11 @@ extern cl_double2 *parametric; //Parametric distances of entry and exit points f
 extern cl_uint actualWidth;
 
 //actual_width padded to a multiple of threadsPerWorkgroup
-extern cl_uint padded_width;
+extern cl_uint paddedWidth;
 
 //The width of the input and output buffers used
 //Must be <= WORK_ITEM_LIMIT
-extern cl_uint buffer_width;
+extern cl_uint bufferWidth;
 
 //The memory buffers that are used as input/output to the OpenCL kernel
 extern cl_mem orig_buf;
@@ -72,10 +72,6 @@ extern char deviceName[];
 //Used for error tracking
 extern cl_int status;
 
-//Event objects
-extern cl_event exec_events[1];//Tracking kernel execution
-
-
 //Function Declarations
 
 //CL environment init
@@ -103,6 +99,10 @@ void runCLKernelsWithIO(void);
 //Execute kernels on OpenCL Device
 //Execution Only (for benchmarking)
 void runCLKernels(void);
+
+//Converts the contents of a file into a string
+//Used to feed kernel source code to the OpenCL Compiler
+std::string convertToString(const char*);
 
 //Exports a binary image of the current kernel
 void dumpBinary(cl_program,const char*);

@@ -3,57 +3,54 @@
 #include <cstring>
 #include <cstdlib>
 
-
 #include <CL/cl.h>
 
 #include "gpuHandler.hpp"
 
 //Input data is stored here.
- cl_double4 *origin;//Ray Origin
- cl_double4 *dir;//Ray Direction
- cl_double4 *vert0;//Tetrahedron vertices 0-3
- cl_double4 *vert1;
- cl_double4 *vert2;
- cl_double4 *vert3;
-
+cl_double4 *origin;//Ray Origin
+cl_double4 *dir;//Ray Direction
+cl_double4 *vert0;//Tetrahedron vertices 0-3
+cl_double4 *vert1;
+cl_double4 *vert2;
+cl_double4 *vert3;
 
 //Output data is stored here.
- cl_double8 *cartesian; //Cartesian Coordinates for the entry and exit points
- cl_double4 *barycentric; //Barycentric Coordinates for the same
- cl_double2 *parametric; //Parametric distances of entry and exit points from orig
+cl_double8 *cartesian; //Cartesian Coordinates for the entry and exit points
+cl_double4 *barycentric; //Barycentric Coordinates for the same
+cl_double2 *parametric; //Parametric distances of entry and exit points from orig
 
 //Actual Ray-Tetrahedron pairs processed. 
- cl_uint actualWidth;
+cl_uint actualWidth;
 
 //actualWidth padded to a multiple of threadsPerWorkgroup
- cl_uint padded_width;
+cl_uint paddedWidth;
 
 //The width of the input and output buffers used
 //Must be <= WORK_ITEM_LIMIT
- cl_uint buffer_width;
- 
+cl_uint bufferWidth;
+
 //The memory buffers that are used as input/output to the OpenCL kernel
- cl_mem orig_buf;
- cl_mem dir_buf;
- cl_mem vert0_buf;
- cl_mem vert1_buf;
- cl_mem vert2_buf;
- cl_mem vert3_buf;
+cl_mem orig_buf;
+cl_mem dir_buf;
+cl_mem vert0_buf;
+cl_mem vert1_buf;
+cl_mem vert2_buf;
+cl_mem vert3_buf;
 
- cl_mem cartesian_buf;
- cl_mem barycentric_buf;
- cl_mem parametric_buf;
-
+cl_mem cartesian_buf;
+cl_mem barycentric_buf;
+cl_mem parametric_buf;
 
 //CL Context and kernel objects
- cl_context          context;
- cl_device_id        *devices;
- cl_command_queue    commandQueue;
+cl_context          context;
+cl_device_id        *devices;
+cl_command_queue    commandQueue;
 
- cl_program program;
+cl_program program;
 
- cl_kernel  kernel;
- 
+cl_kernel  kernel;
+
 //The number of work items(threads) launched (at minimum) for every work group of the target device
 //64 for AMD GPUs, a multiple of 32 determined at runtime for Nvidia GPUs, ignored for CPUs
 size_t threadsPerWorkgroup = 1;
@@ -66,10 +63,7 @@ char deviceName[MAX_NAME_LENGTH];
 //Used for error tracking
 cl_int status;
 
-//Event objects
-cl_event exec_events[1];//Tracking kernel execution
-
-       
+      
 //Run the CL kernel
 //Handles buffer IO
 void runCLKernelsWithIO(void)
@@ -80,13 +74,14 @@ void runCLKernelsWithIO(void)
 	localThreads[0]= threadsPerWorkgroup;  
 		
 	//Break up kernel execution to 1 exec per WORK_ITEM_LIMIT work items.
-	cl_uint remainingWidth = padded_width;
-	cl_uint bufferOffset = 0;
+	cl_uint remainingWidth = paddedWidth;
+	cl_uint offset = 0;
+	cl_event exec_events[1];//An event that tracks kernel execution
 		
 	while(remainingWidth > WORK_ITEM_LIMIT)
 	{	  
 	  
-	  writeBuffers(bufferOffset,WORK_ITEM_LIMIT);
+	  writeBuffers(offset,WORK_ITEM_LIMIT);
 	  //Enqueue a kernel run call.	
 	  globalThreads[0] = WORK_ITEM_LIMIT;
 	  
@@ -106,17 +101,17 @@ void runCLKernelsWithIO(void)
 	  status = clWaitForEvents(1,&exec_events[0]);
 	  if(status != CL_SUCCESS) exitOnError("Waiting for kernel run to finish.(clWaitForEvents)");
 	  
-	  readBuffers(bufferOffset,WORK_ITEM_LIMIT);
+	  readBuffers(offset,WORK_ITEM_LIMIT);
 	
-	 remainingWidth -= WORK_ITEM_LIMIT;
-	 bufferOffset += WORK_ITEM_LIMIT;
+	remainingWidth -= WORK_ITEM_LIMIT;
+	offset += WORK_ITEM_LIMIT;
 	  
 	}
 		
 	//Final kernel run call for remaining work_items
 	globalThreads[0] = remainingWidth;
 	
-	writeBuffers(bufferOffset,remainingWidth);
+	writeBuffers(offset,remainingWidth);
 		
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
@@ -134,7 +129,10 @@ void runCLKernelsWithIO(void)
 	status = clWaitForEvents(1,&exec_events[0]);
 	if(status != CL_SUCCESS) exitOnError("Waiting for kernel run to finish.(clWaitForEvents)");
 	
-	readBuffers(bufferOffset,remainingWidth);
+	readBuffers(offset,remainingWidth);
+	
+	status = clReleaseEvent(exec_events[0]);
+	if(status != CL_SUCCESS) exitOnError("Releasing event object exec_events[0].(clWaitForEvents)");
 
 }
 
@@ -147,7 +145,8 @@ void runCLKernels(void)
 	size_t localThreads[1];
 		
 	localThreads[0]= threadsPerWorkgroup;  			
-	globalThreads[0] = padded_width;
+	globalThreads[0] = paddedWidth;
+	cl_event exec_events[1];//An event that tracks kernel execution
 	
 	status = clEnqueueNDRangeKernel(
 		commandQueue,
@@ -164,6 +163,9 @@ void runCLKernels(void)
 	
 	status = clWaitForEvents(1,&exec_events[0]);
 	if(status != CL_SUCCESS) exitOnError("Waiting for kernel run to finish.(clWaitForEvents)");
+	
+	status = clReleaseEvent(exec_events[0]);
+	if(status != CL_SUCCESS) exitOnError("Releasing event object exec_events[0].(clWaitForEvents)");
 }
 
 //Determines the size of the input arrays needed and allocates them
@@ -186,109 +188,107 @@ void allocateInput(int actual_width,int deviceNum)
 	
 	    threadsPerWorkgroup = maxGroupSize;
 	}
-
-
 	    
 	//Determine the amount of false entries to pad the input arrays with.
 	//Create a workgroup size of threadsPerWorkgroup 
-	if((actual_width % threadsPerWorkgroup) != 0) padded_width = actual_width + (threadsPerWorkgroup - (actual_width % threadsPerWorkgroup));
-	else padded_width = actual_width;
+	if((actual_width % threadsPerWorkgroup) != 0) paddedWidth = actual_width + (threadsPerWorkgroup - (actual_width % threadsPerWorkgroup));
+	else paddedWidth = actual_width;
 	
 	//Memory used to store vector objects must be stored in 16 byte aligned addresses.
 	//Mostly needed for 32bit systems.
 	#if defined (_WIN32)
 	
 	//Input Arrays
-	origin = (cl_double4 *) _aligned_malloc(padded_width * sizeof(cl_double4),16);
+	origin = (cl_double4 *) _aligned_malloc(paddedWidth * sizeof(cl_double4),16);
 	if(origin == NULL) exitOnError("Failed to allocate input memory on host(origin)");
 
-	dir = (cl_double4 *) _aligned_malloc(padded_width * sizeof(cl_double4),16);
+	dir = (cl_double4 *) _aligned_malloc(paddedWidth * sizeof(cl_double4),16);
 	if(dir == NULL) exitOnError("Failed to allocate input memory on host(dir)");
 
-	vert0 = (cl_double4 *) _aligned_malloc(padded_width * sizeof(cl_double4),16);
+	vert0 = (cl_double4 *) _aligned_malloc(paddedWidth * sizeof(cl_double4),16);
 	if(vert0 == NULL) exitOnError("Failed to allocate input memory on host(vert0)");
 
-	vert1 = (cl_double4 *) _aligned_malloc(padded_width * sizeof(cl_double4),16);
+	vert1 = (cl_double4 *) _aligned_malloc(paddedWidth * sizeof(cl_double4),16);
 	if(vert1 == NULL) exitOnError("Failed to allocate input memory on host(vert1)");
 
-	vert2 = (cl_double4 *) _aligned_malloc(padded_width * sizeof(cl_double4),16);
+	vert2 = (cl_double4 *) _aligned_malloc(paddedWidth * sizeof(cl_double4),16);
 	if(vert2 == NULL) exitOnError("Failed to allocate input memory on host(vert2)");
 
-	vert3 = (cl_double4 *) _aligned_malloc(padded_width * sizeof(cl_double4),16);
+	vert3 = (cl_double4 *) _aligned_malloc(paddedWidth * sizeof(cl_double4),16);
 	if(vert3 == NULL) exitOnError("Failed to allocate input memory on host(vert3)");
 
 	//Output Arrays
-	cartesian = (cl_double8*)_aligned_malloc(padded_width * sizeof(cl_double8),16);
+	cartesian = (cl_double8*)_aligned_malloc(paddedWidth * sizeof(cl_double8),16);
 	if(cartesian == NULL) exitOnError("Failed to allocate output memory on host(cartesian)");
 	
-	barycentric = (cl_double4*)_aligned_malloc(padded_width * sizeof(cl_double4),16);
+	barycentric = (cl_double4*)_aligned_malloc(paddedWidth * sizeof(cl_double4),16);
 	if(barycentric == NULL) exitOnError("Failed to allocate output memory on host(barycentric)");
 	
-	parametric = (cl_double2*)_aligned_malloc(padded_width * sizeof(cl_double2),16);
+	parametric = (cl_double2*)_aligned_malloc(paddedWidth * sizeof(cl_double2),16);
 	if(parametric == NULL) exitOnError("Failed to allocate output memory on host(parametric)");
 	
 
       #elif defined _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600	
 	
 	//Input Arrays
-	status = posix_memalign((void**)&origin,16,padded_width * sizeof(cl_double4));
+	status = posix_memalign((void**)&origin,16,paddedWidth * sizeof(cl_double4));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(origin)");
 
-	status = posix_memalign((void**)&dir,16,padded_width * sizeof(cl_double4));
+	status = posix_memalign((void**)&dir,16,paddedWidth * sizeof(cl_double4));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(dir)");
 
-	status = posix_memalign((void**)&vert0,16,padded_width * sizeof(cl_double4));
+	status = posix_memalign((void**)&vert0,16,paddedWidth * sizeof(cl_double4));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(vert0)");
 
-	status = posix_memalign((void**)&vert1,16,padded_width * sizeof(cl_double4));
+	status = posix_memalign((void**)&vert1,16,paddedWidth * sizeof(cl_double4));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(vert1)");
 
-	status = posix_memalign((void**)&vert2,16,padded_width * sizeof(cl_double4));
+	status = posix_memalign((void**)&vert2,16,paddedWidth * sizeof(cl_double4));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(vert2)");
 
-	status = posix_memalign((void**)&vert3,16,padded_width * sizeof(cl_double4));
+	status = posix_memalign((void**)&vert3,16,paddedWidth * sizeof(cl_double4));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(vert3)");
 
 	//Output Arrays
-	status = posix_memalign((void**)&cartesian,16,padded_width * sizeof(cl_double8));
+	status = posix_memalign((void**)&cartesian,16,paddedWidth * sizeof(cl_double8));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(cartesian)");
 	
-	status = posix_memalign((void**)&barycentric,16,padded_width * sizeof(cl_double4));
+	status = posix_memalign((void**)&barycentric,16,paddedWidth * sizeof(cl_double4));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(berycentric)");
 	
-	status = posix_memalign((void**)&parametric,16,padded_width * sizeof(cl_double2));
+	status = posix_memalign((void**)&parametric,16,paddedWidth * sizeof(cl_double2));
 	if(status != 0) exitOnError("Failed to allocate input memory on host(parametric)");
 
 	#else
 
-	origin = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	origin = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
 	if(origin == NULL) exitOnError("Failed to allocate input memory on host(origin)");
 
-	dir = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	dir = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
 	if(dir == NULL) exitOnError("Failed to allocate input memory on host(dir)");
 
-	vert0 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	vert0 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
 	if(vert0 == NULL) exitOnError("Failed to allocate input memory on host(vert0)");
 
-	vert1 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	vert1 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
 	if(vert1 == NULL) exitOnError("Failed to allocate input memory on host(vert1)");
 
-	vert2 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	vert2 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
 	if(vert2 == NULL) exitOnError("Failed to allocate input memory on host(vert2)");
 
-	vert3 = (cl_double4 *) malloc(padded_width * sizeof(cl_double4));
+	vert3 = (cl_double4 *) malloc(paddedWidth * sizeof(cl_double4));
 	if(vert3 == NULL) exitOnError("Failed to allocate input memory on host(vert3)");
 
 	//Output Arrays
-	cartesian = (cl_double8*)malloc(padded_width * sizeof(cl_double8));
+	cartesian = (cl_double8*)malloc(paddedWidth * sizeof(cl_double8));
 	if(cartesian == NULL) exitOnError("Failed to allocate output memory on host(cartesian)");
 	
-	barycentric = (cl_double4*)malloc(padded_width * sizeof(cl_double4));
+	barycentric = (cl_double4*)malloc(paddedWidth * sizeof(cl_double4));
 	if(barycentric == NULL) exitOnError("Failed to allocate output memory on host(barycentric)");
 	
-	parametric = (cl_double2*)malloc(padded_width * sizeof(cl_double2));
+	parametric = (cl_double2*)malloc(paddedWidth * sizeof(cl_double2));
 	if(parametric == NULL) exitOnError("Failed to allocate output memory on host(parametric)");
-#endif
+	#endif
 	
 }
 
@@ -296,14 +296,14 @@ void allocateInput(int actual_width,int deviceNum)
 void allocateBuffers(void)
 {
 	
-	buffer_width = (padded_width <= WORK_ITEM_LIMIT) ? padded_width:WORK_ITEM_LIMIT;
+	bufferWidth = (paddedWidth <= WORK_ITEM_LIMIT) ? paddedWidth:WORK_ITEM_LIMIT;
 
 	// Create OpenCL memory buffers
 	//Input buffers
 	orig_buf = clCreateBuffer(
 		context, 
 		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
+		sizeof(cl_double4) * bufferWidth,
 		NULL, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(orig)"); 
@@ -311,7 +311,7 @@ void allocateBuffers(void)
 	dir_buf = clCreateBuffer(
 		context, 
 		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
+		sizeof(cl_double4) * bufferWidth,
 		NULL, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(dir)"); 
@@ -320,7 +320,7 @@ void allocateBuffers(void)
 	vert0_buf = clCreateBuffer(
 		context, 
 		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
+		sizeof(cl_double4) * bufferWidth,
 		NULL, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert0)"); 
@@ -328,7 +328,7 @@ void allocateBuffers(void)
 	vert1_buf = clCreateBuffer(
 		context, 
 		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
+		sizeof(cl_double4) * bufferWidth,
 		NULL, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert1)");
@@ -336,7 +336,7 @@ void allocateBuffers(void)
 	vert2_buf = clCreateBuffer(
 		context, 
 		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
+		sizeof(cl_double4) * bufferWidth,
 		NULL, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert2)"); 
@@ -344,7 +344,7 @@ void allocateBuffers(void)
 	vert3_buf = clCreateBuffer(
 		context, 
 		CL_MEM_READ_ONLY,
-		sizeof(cl_double4) * buffer_width,
+		sizeof(cl_double4) * bufferWidth,
 		NULL, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(vert3)"); 
@@ -353,7 +353,7 @@ void allocateBuffers(void)
 	cartesian_buf = clCreateBuffer(
 		context, 
 		CL_MEM_WRITE_ONLY,
-		sizeof(cl_double8) * buffer_width,
+		sizeof(cl_double8) * bufferWidth,
 		NULL, 
 		&status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(cartesian_buf)");
@@ -361,7 +361,7 @@ void allocateBuffers(void)
 	barycentric_buf = clCreateBuffer(
 	  context, 
 	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double4) * buffer_width,
+	  sizeof(cl_double4) * bufferWidth,
 	  NULL, 
 	  &status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(barycentric_buf)");
@@ -369,7 +369,7 @@ void allocateBuffers(void)
 	parametric_buf = clCreateBuffer(
 	  context, 
 	  CL_MEM_WRITE_ONLY,
-	  sizeof(cl_double2) * buffer_width,
+	  sizeof(cl_double2) * bufferWidth,
 	  NULL, 
 	  &status);
 	if(status != CL_SUCCESS) exitOnError("Cannot Create buffer(parametric_buf)");
@@ -438,14 +438,11 @@ void allocateBuffers(void)
 		(void *)&parametric_buf);
 	if(status != CL_SUCCESS) exitOnError("Setting kernel argument. (cartesian_buf)"); 
 
-
-  
 }
 
 //Fills input buffers with data
-void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
+void writeBuffers(cl_uint offset,cl_uint entriesToWrite)
 {
-  //printf("Offset:%d Entries to Write:%d Buffer Width:%d\n",bufferOffset,entriesToWrite,buffer_width);
   
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
@@ -453,7 +450,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * entriesToWrite,
-		  origin + bufferOffset,
+		  origin + offset,
 		  0,
 		  NULL,
 		  NULL); 				  
@@ -465,7 +462,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * entriesToWrite,
-		  dir + bufferOffset,
+		  dir + offset,
 		  0,
 		  NULL,
 		  NULL); 				  
@@ -477,7 +474,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * entriesToWrite,
-		  vert0 + bufferOffset,
+		  vert0 + offset,
 		  0,
 		  NULL,
 		  NULL); 				  
@@ -489,7 +486,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * entriesToWrite,
-		  vert1 + bufferOffset,
+		  vert1 + offset,
 		  0,
 		  NULL,
 		  NULL); 				  
@@ -501,7 +498,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * entriesToWrite,
-		  vert2 + bufferOffset,
+		  vert2 + offset,
 		  0,
 		  NULL,
 		  NULL); 				  
@@ -513,7 +510,7 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 		  CL_TRUE,
 		  0,
 		  sizeof(cl_double4) * entriesToWrite,
-		  vert3 + bufferOffset,
+		  vert3 + offset,
 		  0,
 		  NULL,
 		  NULL); 				  
@@ -522,16 +519,16 @@ void writeBuffers(cl_uint bufferOffset,cl_uint entriesToWrite)
 }
 
 //Reads data from output buffers
-void readBuffers(cl_uint bufferOffset,cl_uint entriesToRead)
+void readBuffers(cl_uint offset,cl_uint entriesToRead)
 {
-    //printf("Offset:%d Entries to Read:%d\n",bufferOffset,entriesToRead);
-  	  status = clEnqueueReadBuffer(
+  
+	  status = clEnqueueReadBuffer(
 		commandQueue,
 		cartesian_buf,
 		CL_TRUE,
 		0,
 		entriesToRead * sizeof(cl_double8),
-		cartesian + bufferOffset,
+		cartesian + offset,
 		0,
 		NULL,
 		NULL);
@@ -544,7 +541,7 @@ void readBuffers(cl_uint bufferOffset,cl_uint entriesToRead)
 		CL_TRUE,
 		0,
 		entriesToRead * sizeof(cl_double4),
-		barycentric+ bufferOffset,
+		barycentric + offset,
 		0,
 		NULL,
 		NULL);
@@ -558,7 +555,7 @@ void readBuffers(cl_uint bufferOffset,cl_uint entriesToRead)
 		CL_TRUE,
 		0,
 		entriesToRead * sizeof(cl_double2),
-		parametric+ bufferOffset,
+		parametric + offset,
 		0,
 		NULL,
 		NULL);
@@ -660,47 +657,12 @@ void initializeCL(int deviceNum)
 	status = clGetDeviceInfo(devices[deviceNum],CL_DEVICE_TYPE,sizeof(cl_device_type),&deviceType,NULL);
 	if (status != CL_SUCCESS) exitOnError("Cannot get device type for given device number(clGetDeviceInfo)");
 	
-	if(deviceType == CL_DEVICE_TYPE_CPU) threadsPerWorkgroup = 1;
+	if (deviceType == CL_DEVICE_TYPE_CPU) threadsPerWorkgroup = 1;
 	else if(!strcmp(deviceVendorName,"Advanced Micro Devices, Inc.")) threadsPerWorkgroup = 64;
 	else if(!strcmp(deviceVendorName,"NVIDIA Corporation")) threadsPerWorkgroup = 32;
-
- 
+  
 }
 
-//Converts the contents of a file into a string
-//Used to feed kernel source code to the OpenCL Compiler
-std::string convertToString(const char *filename)
-{
-	size_t size;
-	char*  str;
-	std::string s;
-
-	std::fstream f(filename, (std::fstream::in | std::fstream::binary));
-
-	if(f.is_open())
-	{
-		size_t fileSize;
-		f.seekg(0, std::fstream::end);
-		size = fileSize = f.tellg();
-		f.seekg(0, std::fstream::beg);
-
-		str = new char[size+1];
-		if(!str)
-		{
-			f.close();
-			return NULL;
-		}
-
-		f.read(str, fileSize);
-		f.close();
-		str[size] = '\0';
-
-		s = str;
-		delete[] str;
-		return s;
-	}
-	return "NULL";
-}
 
 //Load CL file, compile, link CL source
 //Try to find a precompiled binary
@@ -771,7 +733,7 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 	  bin = new char[*binSize];
 	  inBinFile.read(bin,*binSize);
 	  inBinFile.close();
-	  	  
+		  
 	  program = clCreateProgramWithBinary(
 	    context, 
 	    1, 
@@ -779,7 +741,7 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 	    binSize,
 	    (const unsigned char **)&bin,
 	    NULL,
-	   &status);
+	  &status);
 	  if(status != CL_SUCCESS) exitOnError("Loading Binary into cl_program (clCreateProgramWithBinary)");
 	    
 	  // create a cl program executable for all the devices specified 
@@ -815,10 +777,47 @@ void makeCLKernel(const char *kernelName,int deviceNum)
 
 }
 
+//Converts the contents of a file into a string
+//Used to feed kernel source code to the OpenCL Compiler
+std::string convertToString(const char *filename)
+{
+	size_t size;
+	char*  str;
+	std::string s;
+
+	std::fstream f(filename, (std::fstream::in | std::fstream::binary));
+
+	if(f.is_open())
+	{
+		size_t fileSize;
+		f.seekg(0, std::fstream::end);
+		size = fileSize = f.tellg();
+		f.seekg(0, std::fstream::beg);
+
+		str = new char[size+1];
+		if(!str)
+		{
+			f.close();
+			return NULL;
+		}
+
+		f.read(str, fileSize);
+		f.close();
+		str[size] = '\0';
+
+		s = str;
+		delete[] str;
+		return s;
+	}
+	return "NULL";
+
+  
+}
+
 //Dumps a compiled kernel to a binary file
 void dumpBinary(cl_program program,const char *kernelName)
 {
- 	
+	
 	//Get number of devices
 	cl_uint deviceCount = 0;
 	status = clGetProgramInfo(program,CL_PROGRAM_NUM_DEVICES,sizeof(cl_uint),&deviceCount,NULL);
@@ -890,10 +889,6 @@ void cleanupCL(void)
 	status = clReleaseMemObject(parametric_buf);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseMemObject (parametric_buf)\n");
 		
-	status = clReleaseEvent(exec_events[0]);
-	if(status != CL_SUCCESS) exitOnError("In clReleaseEvent(exec_events)\n");
-
-
 	status = clReleaseCommandQueue(commandQueue);
 	if(status != CL_SUCCESS) exitOnError("In clReleaseCommandQueue\n");
 

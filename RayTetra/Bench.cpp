@@ -267,31 +267,29 @@ int main(int argc, char* argv[])
     NpProgramTimer timerGPUSegura0Exec,timerGPUSegura0Read,timerGPUSegura0Write;
     
     timerGPUSegura0Write.Start();
-    writeBuffers(0,padded_width);       
+    writeBuffers(0,paddedWidth);       
     timerGPUSegura0Write.Stop();
-    
-    resultsFile << timerGPUSegura0Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSegura0Write.TotalElapsedTime() << std::endl;
     
     timerGPUSegura0Exec.Start();
     for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
     timerGPUSegura0Exec.Stop();
     
+    timerGPUSegura0Read.Start();
+    readBuffers(0,paddedWidth);       
+    timerGPUSegura0Read.Stop();
+  
+    resultsFile << timerGPUSegura0Write.TotalElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSegura0Write.TotalElapsedTime() << std::endl;    
+    
     resultsFile << timerGPUSegura0Exec.TotalElapsedTime()<< ',';
     std::cout << "Execution: " << timerGPUSegura0Exec.TotalElapsedTime() << std::endl;
-    
-    timerGPUSegura0Read.Start();
-    readBuffers(0,padded_width);       
-    timerGPUSegura0Read.Stop();
-    
+
     resultsFile << timerGPUSegura0Read.TotalElapsedTime()<< ',';
     std::cout << "Buffer Read: " << timerGPUSegura0Read.TotalElapsedTime() << std::endl;
-    
-    
+   
     cleanupCL();
     cleanupHost();
     
-
     //GPU STP0 Benchmark
     initializeCL(arguments.deviceNum);
     makeCLKernel("RayTetraSTP0",arguments.deviceNum);
@@ -304,30 +302,29 @@ int main(int argc, char* argv[])
     NpProgramTimer timerGPUSTP0Exec,timerGPUSTP0Read,timerGPUSTP0Write;
     
     timerGPUSTP0Write.Start();
-    writeBuffers(0,padded_width);       
+    writeBuffers(0,paddedWidth);       
     timerGPUSTP0Write.Stop();
-    
-    resultsFile << timerGPUSTP0Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSTP0Write.TotalElapsedTime() << std::endl;
     
     timerGPUSTP0Exec.Start();
     for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
     timerGPUSTP0Exec.Stop();
     
-    resultsFile << timerGPUSTP0Exec.TotalElapsedTime()<< ',';
-    std::cout << "Execution: " << timerGPUSTP0Exec.TotalElapsedTime() << std::endl;
-    
     timerGPUSTP0Read.Start();
-    readBuffers(0,padded_width);       
+    readBuffers(0,paddedWidth);       
     timerGPUSTP0Read.Stop();
     
+    resultsFile << timerGPUSTP0Write.TotalElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSTP0Write.TotalElapsedTime() << std::endl;
+      
+    resultsFile << timerGPUSTP0Exec.TotalElapsedTime()<< ',';
+    std::cout << "Execution: " << timerGPUSTP0Exec.TotalElapsedTime() << std::endl;
+       
     resultsFile << timerGPUSTP0Read.TotalElapsedTime()<< ',';
     std::cout << "Buffer Read: " << timerGPUSTP0Read.TotalElapsedTime() << std::endl;
-    
-    
+       
     cleanupCL();
     cleanupHost();
-
+    
     //GPU STP1 Benchmark
     initializeCL(arguments.deviceNum);
     makeCLKernel("RayTetraSTP1",arguments.deviceNum);
@@ -340,27 +337,26 @@ int main(int argc, char* argv[])
     NpProgramTimer timerGPUSTP1Exec,timerGPUSTP1Read,timerGPUSTP1Write;
     
     timerGPUSTP1Write.Start();
-    writeBuffers(0,padded_width);       
+    writeBuffers(0,paddedWidth);       
     timerGPUSTP1Write.Stop();
-    
-    resultsFile << timerGPUSTP1Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSTP1Write.TotalElapsedTime() << std::endl;
     
     timerGPUSTP1Exec.Start();
     for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
     timerGPUSTP1Exec.Stop();
     
-    resultsFile << timerGPUSTP1Exec.TotalElapsedTime()<< ',';
-    std::cout << "Execution: " << timerGPUSTP1Exec.TotalElapsedTime() << std::endl;
-    
     timerGPUSTP1Read.Start();
-    readBuffers(0,padded_width);       
+    readBuffers(0,paddedWidth);       
     timerGPUSTP1Read.Stop();
     
+    resultsFile << timerGPUSTP1Write.TotalElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSTP1Write.TotalElapsedTime() << std::endl;
+      
+    resultsFile << timerGPUSTP1Exec.TotalElapsedTime()<< ',';
+    std::cout << "Execution: " << timerGPUSTP1Exec.TotalElapsedTime() << std::endl;
+       
     resultsFile << timerGPUSTP1Read.TotalElapsedTime()<< ',';
     std::cout << "Buffer Read: " << timerGPUSTP1Read.TotalElapsedTime() << std::endl;
-    
-    
+        
     cleanupCL();
     cleanupHost();
     
@@ -376,35 +372,31 @@ int main(int argc, char* argv[])
     NpProgramTimer timerGPUSTP2Exec,timerGPUSTP2Read,timerGPUSTP2Write;
     
     timerGPUSTP2Write.Start();
-    writeBuffers(0,padded_width);       
+    writeBuffers(0,paddedWidth);       
     timerGPUSTP2Write.Stop();
-    
-    resultsFile << timerGPUSTP2Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSTP2Write.TotalElapsedTime() << std::endl;
     
     timerGPUSTP2Exec.Start();
     for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
     timerGPUSTP2Exec.Stop();
     
-    resultsFile << timerGPUSTP2Exec.TotalElapsedTime()<< ',';
-    std::cout << "Execution: " << timerGPUSTP2Exec.TotalElapsedTime() << std::endl;
-    
     timerGPUSTP2Read.Start();
-    readBuffers(0,padded_width);       
+    readBuffers(0,paddedWidth);       
     timerGPUSTP2Read.Stop();
     
+    resultsFile << timerGPUSTP2Write.TotalElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSTP2Write.TotalElapsedTime() << std::endl;
+      
+    resultsFile << timerGPUSTP2Exec.TotalElapsedTime()<< ',';
+    std::cout << "Execution: " << timerGPUSTP2Exec.TotalElapsedTime() << std::endl;
+          
     resultsFile << timerGPUSTP2Read.TotalElapsedTime();
     std::cout << "Buffer Read: " << timerGPUSTP2Read.TotalElapsedTime() << std::endl;
-    
-    
-    
+           
     cleanupCL();
-    cleanupHost();
-    
+    cleanupHost();  
     
     resultsFile << std::endl;
     
-
     return 0;
 }
 
