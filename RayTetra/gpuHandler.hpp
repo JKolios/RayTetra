@@ -5,7 +5,7 @@
 
 //The maximum number of work items to use per kernel execution
 //This helps avoid crashes due to insufficient GPU resources
-#define WORK_ITEM_LIMIT 1500001
+#define WORK_ITEM_LIMIT 1280000
 
 //The maximum number of chars in a device name or binary filename created at runtime
 #define MAX_NAME_LENGTH 256
@@ -98,7 +98,7 @@ void runCLKernelsWithIO(void);
 
 //Execute kernels on OpenCL Device
 //Execution Only (for benchmarking)
-void runCLKernels(void);
+void runCLKernels(size_t);
 
 //Converts the contents of a file into a string
 //Used to feed kernel source code to the OpenCL Compiler

@@ -138,14 +138,14 @@ void runCLKernelsWithIO(void)
 
 //Run the CL kernel
 //Buffer I/O must be handled separately
-void runCLKernels(void)
+void runCLKernels(size_t runWidth)
 {
-		
+	//cout << "Running " << runWidth << " threads." << endl;	
 	size_t globalThreads[1];
 	size_t localThreads[1];
 		
 	localThreads[0]= threadsPerWorkgroup;  			
-	globalThreads[0] = paddedWidth;
+	globalThreads[0] =  runWidth;
 	cl_event exec_events[1];//An event that tracks kernel execution
 	
 	status = clEnqueueNDRangeKernel(
@@ -187,6 +187,7 @@ void allocateInput(int actual_width,int deviceNum)
 	    if(status != CL_SUCCESS) exitOnError("Cannot get maximum workgroup size for given kernel.(clGetKernelWorkGroupInfo)\n");
 	
 	    threadsPerWorkgroup = maxGroupSize;
+	    //cout << "Work group size: " << maxGroupSize << endl;
 	}
 	    
 	//Determine the amount of false entries to pad the input arrays with.
@@ -443,7 +444,7 @@ void allocateBuffers(void)
 //Fills input buffers with data
 void writeBuffers(cl_uint offset,cl_uint entriesToWrite)
 {
-  
+	//cout << "Writing " << entriesToWrite << " entries into buffers with offset "<< offset << endl;	
 		status = clEnqueueWriteBuffer(
 		  commandQueue,
 		  orig_buf,
@@ -522,7 +523,8 @@ void writeBuffers(cl_uint offset,cl_uint entriesToWrite)
 void readBuffers(cl_uint offset,cl_uint entriesToRead)
 {
   
-	  status = clEnqueueReadBuffer(
+	//cout << "Reading " << entriesToRead << " entries from buffers with offset "<< offset << endl;	  
+	status = clEnqueueReadBuffer(
 		commandQueue,
 		cartesian_buf,
 		CL_TRUE,

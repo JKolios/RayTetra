@@ -266,17 +266,44 @@ int main(int argc, char* argv[])
 
     NpProgramTimer timerGPUSegura0Exec,timerGPUSegura0Read,timerGPUSegura0Write;
     
-    timerGPUSegura0Write.Start();
-    writeBuffers(0,paddedWidth);       
-    timerGPUSegura0Write.Stop();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) {
+      
+	//Break up kernel execution to 1 exec per WORK_ITEM_LIMIT work items.
+	cl_uint remainingWidth = paddedWidth;
+	cl_uint offset = 0;
+	
+	while(remainingWidth > WORK_ITEM_LIMIT)
+	{
+	  
+	timerGPUSegura0Write.Start();
+	writeBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSegura0Write.Stop();
     
-    timerGPUSegura0Exec.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSegura0Exec.Stop();
+	timerGPUSegura0Exec.Start();
+	runCLKernels(WORK_ITEM_LIMIT);       
+	timerGPUSegura0Exec.Stop();
     
-    timerGPUSegura0Read.Start();
-    readBuffers(0,paddedWidth);       
-    timerGPUSegura0Read.Stop();
+	timerGPUSegura0Read.Start();
+	readBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSegura0Read.Stop();
+	
+	remainingWidth -= WORK_ITEM_LIMIT;
+	offset += WORK_ITEM_LIMIT;
+	
+	}
+	
+	timerGPUSegura0Write.Start();
+	writeBuffers(offset,remainingWidth);       
+	timerGPUSegura0Write.Stop();
+    
+	timerGPUSegura0Exec.Start();
+	runCLKernels(remainingWidth);       
+	timerGPUSegura0Exec.Stop();
+    
+	timerGPUSegura0Read.Start();
+	readBuffers(offset,remainingWidth);       
+	timerGPUSegura0Read.Stop();
+    }
   
     resultsFile << timerGPUSegura0Write.TotalElapsedTime()<< ',';
     std::cout << "Buffer Write: " << timerGPUSegura0Write.TotalElapsedTime() << std::endl;    
@@ -301,17 +328,44 @@ int main(int argc, char* argv[])
 
     NpProgramTimer timerGPUSTP0Exec,timerGPUSTP0Read,timerGPUSTP0Write;
     
-    timerGPUSTP0Write.Start();
-    writeBuffers(0,paddedWidth);       
-    timerGPUSTP0Write.Stop();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) {
+      
+	//Break up kernel execution to 1 exec per WORK_ITEM_LIMIT work items.
+	cl_uint remainingWidth = paddedWidth;
+	cl_uint offset = 0;
+	
+	while(remainingWidth > WORK_ITEM_LIMIT)
+	{
+	  
+	timerGPUSTP0Write.Start();
+	writeBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSTP0Write.Stop();
     
-    timerGPUSTP0Exec.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSTP0Exec.Stop();
+	timerGPUSTP0Exec.Start();
+	runCLKernels(WORK_ITEM_LIMIT);       
+	timerGPUSTP0Exec.Stop();
     
-    timerGPUSTP0Read.Start();
-    readBuffers(0,paddedWidth);       
-    timerGPUSTP0Read.Stop();
+	timerGPUSTP0Read.Start();
+	readBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSTP0Read.Stop();
+	
+	remainingWidth -= WORK_ITEM_LIMIT;
+	offset += WORK_ITEM_LIMIT;
+	
+	}
+	
+	timerGPUSTP0Write.Start();
+	writeBuffers(offset,remainingWidth);       
+	timerGPUSTP0Write.Stop();
+    
+	timerGPUSTP0Exec.Start();
+	runCLKernels(remainingWidth);       
+	timerGPUSTP0Exec.Stop();
+    
+	timerGPUSTP0Read.Start();
+	readBuffers(offset,remainingWidth);       
+	timerGPUSTP0Read.Stop();
+    }
     
     resultsFile << timerGPUSTP0Write.TotalElapsedTime()<< ',';
     std::cout << "Buffer Write: " << timerGPUSTP0Write.TotalElapsedTime() << std::endl;
@@ -336,17 +390,44 @@ int main(int argc, char* argv[])
 
     NpProgramTimer timerGPUSTP1Exec,timerGPUSTP1Read,timerGPUSTP1Write;
     
-    timerGPUSTP1Write.Start();
-    writeBuffers(0,paddedWidth);       
-    timerGPUSTP1Write.Stop();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) {
+      
+	//Break up kernel execution to 1 exec per WORK_ITEM_LIMIT work items.
+	cl_uint remainingWidth = paddedWidth;
+	cl_uint offset = 0;
+	
+	while(remainingWidth > WORK_ITEM_LIMIT)
+	{
+	  
+	timerGPUSTP1Write.Start();
+	writeBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSTP1Write.Stop();
     
-    timerGPUSTP1Exec.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSTP1Exec.Stop();
+	timerGPUSTP1Exec.Start();
+	runCLKernels(WORK_ITEM_LIMIT);       
+	timerGPUSTP1Exec.Stop();
     
-    timerGPUSTP1Read.Start();
-    readBuffers(0,paddedWidth);       
-    timerGPUSTP1Read.Stop();
+	timerGPUSTP1Read.Start();
+	readBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSTP1Read.Stop();
+	
+	remainingWidth -= WORK_ITEM_LIMIT;
+	offset += WORK_ITEM_LIMIT;
+	
+	}
+	
+	timerGPUSTP1Write.Start();
+	writeBuffers(offset,remainingWidth);       
+	timerGPUSTP1Write.Stop();
+    
+	timerGPUSTP1Exec.Start();
+	runCLKernels(remainingWidth);       
+	timerGPUSTP1Exec.Stop();
+    
+	timerGPUSTP1Read.Start();
+	readBuffers(offset,remainingWidth);       
+	timerGPUSTP1Read.Stop();
+    }
     
     resultsFile << timerGPUSTP1Write.TotalElapsedTime()<< ',';
     std::cout << "Buffer Write: " << timerGPUSTP1Write.TotalElapsedTime() << std::endl;
@@ -371,17 +452,44 @@ int main(int argc, char* argv[])
 
     NpProgramTimer timerGPUSTP2Exec,timerGPUSTP2Read,timerGPUSTP2Write;
     
-    timerGPUSTP2Write.Start();
-    writeBuffers(0,paddedWidth);       
-    timerGPUSTP2Write.Stop();
+    for (unsigned int r = 0; r < arguments.repetitions; ++r) {
+      
+	//Break up kernel execution to 1 exec per WORK_ITEM_LIMIT work items.
+	cl_uint remainingWidth = paddedWidth;
+	cl_uint offset = 0;
+	
+	while(remainingWidth > WORK_ITEM_LIMIT)
+	{
+	  
+	timerGPUSTP2Write.Start();
+	writeBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSTP2Write.Stop();
     
-    timerGPUSTP2Exec.Start();
-    for (unsigned int r = 0; r < arguments.repetitions; ++r) runCLKernels();       
-    timerGPUSTP2Exec.Stop();
+	timerGPUSTP2Exec.Start();
+	runCLKernels(WORK_ITEM_LIMIT);       
+	timerGPUSTP2Exec.Stop();
     
-    timerGPUSTP2Read.Start();
-    readBuffers(0,paddedWidth);       
-    timerGPUSTP2Read.Stop();
+	timerGPUSTP2Read.Start();
+	readBuffers(offset,WORK_ITEM_LIMIT);       
+	timerGPUSTP2Read.Stop();
+	
+	remainingWidth -= WORK_ITEM_LIMIT;
+	offset += WORK_ITEM_LIMIT;
+	
+	}
+	
+	timerGPUSTP2Write.Start();
+	writeBuffers(offset,remainingWidth);       
+	timerGPUSTP2Write.Stop();
+    
+	timerGPUSTP2Exec.Start();
+	runCLKernels(remainingWidth);       
+	timerGPUSTP2Exec.Stop();
+    
+	timerGPUSTP2Read.Start();
+	readBuffers(offset,remainingWidth);       
+	timerGPUSTP2Read.Stop();
+    }
     
     resultsFile << timerGPUSTP2Write.TotalElapsedTime()<< ',';
     std::cout << "Buffer Write: " << timerGPUSTP2Write.TotalElapsedTime() << std::endl;
