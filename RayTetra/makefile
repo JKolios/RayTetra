@@ -1,6 +1,6 @@
 CC = g++
 CXXFLAGS = -Wall -O2 -Wno-unused-but-set-variable
-LDLIBS = -L /usr/X11R6/lib -L $AMDAPPSDKROOT/lib/x86_64 -lGL -lGLU -lglut  -lOpenCL
+LDLIBS = -L /usr/X11R6/lib  -lGL -lGLU -lglut  -lOpenCL
 
 
 all: RandomRayTetra RayTetra RayTetraT Bench BenchT
@@ -22,4 +22,4 @@ cleanbak:
 	rm -f *~ ../Common/*~
 
 cleanoutput:
-	rm -f *.txt *.elf *.csv input* *.differences
+	rm -f *.txt *.elf *.csv input* *.differences *.eps

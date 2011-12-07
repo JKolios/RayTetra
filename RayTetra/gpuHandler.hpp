@@ -5,7 +5,7 @@
 
 //The maximum number of work items to use per kernel execution
 //This helps avoid crashes due to insufficient GPU resources
-#define WORK_ITEM_LIMIT 1280000
+#define WORK_ITEM_LIMIT 2560000
 
 //The maximum number of chars in a device name or binary filename created at runtime
 #define MAX_NAME_LENGTH 256
