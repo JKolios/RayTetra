@@ -3,7 +3,8 @@ import unicode;
 texpreamble("\usepackage[greek]{babel} ");
 defaultpen(fontsize(18pt));
      
-  size(30cm,21cm,IgnoreAspect);
+  size(50cm,30cm,IgnoreAspect);
+
      
   file in=(input("bench_output.csv",true,"#"));
   
@@ -77,9 +78,14 @@ for(int i=0;i<point_count;++i){
     gpu_stp2_read_times.push(read_val);
 }
 
-draw(graph(percentages,cpu_stp0_times),red);
-draw(graph(percentages,cpu_stp1_times),blue);
-draw(graph(percentages,cpu_stp2_times),green);
+draw(graph(percentages,cpu_segura0_times),red,marker(scale(0.8mm)*unitcircle,red,FillDraw(red),above=false));
+draw(graph(percentages,cpu_stp0_times),blue,marker(scale(0.8mm)*unitcircle,blue,FillDraw(blue),above=false));
+draw(graph(percentages,cpu_stp1_times),green,marker(scale(0.8mm)*unitcircle,green,FillDraw(green),above=false));
+draw(graph(percentages,cpu_stp2_times),yellow,marker(scale(0.8mm)*unitcircle,yellow,FillDraw(yellow),above=false));
+draw(graph(percentages,gpu_segura0_exec_times),cyan,marker(scale(0.8mm)*unitcircle,cyan,FillDraw(cyan),above=false));
+draw(graph(percentages,gpu_stp0_exec_times),magenta,marker(scale(0.8mm)*unitcircle,magenta,FillDraw(magenta),above=false));
+draw(graph(percentages,gpu_stp1_exec_times),purple,marker(scale(0.8mm)*unitcircle,purple,FillDraw(purple),above=false));
+draw(graph(percentages,gpu_stp2_exec_times),orange,marker(scale(0.8mm)*unitcircle,orange,FillDraw(orange),above=false));
 xaxis("Ποσοστό Τεμνόμενων Ζευγών \%",BottomTop,LeftTicks);  
 yaxis("Χρόνος (ms)",LeftRight,RightTicks);
      

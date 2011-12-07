@@ -49,7 +49,7 @@ echo  \#Intersecting_Pairs,Haines,Moller1,Moller2,Moller3,Segura0,Segura1,Segura
 
 for ((a=0; a <= LIMIT ; a++)) 
 do
-  echo -n $INTERSECTING, >> bench_output.csv 
+  echo -n $CURRENT_PERCENTAGE, >> bench_output.csv 
   
   echo  
   echo "Benchmarking for "$CURRENT_PERCENTAGE"% intersection rate."
