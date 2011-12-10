@@ -912,48 +912,48 @@ void cleanupHost(void)
 #if defined (_WIN32)
 	if(origin != NULL)
 	{
-		_aligned-free(origin);
+		_aligned_free(origin);
 		origin = NULL;
 	}
 	if(dir != NULL)
 	{
-		_aligned-free(dir);
+		_aligned_free(dir);
 		dir = NULL;
 	}
 	if(vert0 != NULL)
 	{
-		_aligned-free(vert0);
+		_aligned_free(vert0);
 		vert0 = NULL;
 	}
 	if(vert1 != NULL)
 	{
-		_aligned-free(vert1);
+		_aligned_free(vert1);
 		vert1 = NULL;
 	}
 	if(vert2 != NULL)
 	{
-		_aligned-free(vert2);
+		_aligned_free(vert2);
 		vert2 = NULL;
 	}
 	if(vert3 != NULL)
 	{
-		_aligned-free(vert3);
+		_aligned_free(vert3);
 		vert3 = NULL;
 	}
 
 	if(cartesian != NULL)
 	{
-		_aligned-free(cartesian);
+		_aligned_free(cartesian);
 		cartesian = NULL;
 	}
 	if(barycentric != NULL)
 	{
-		_aligned-free(barycentric);
+		_aligned_free(barycentric);
 		barycentric = NULL;
 	}
 	if(parametric != NULL)
 	{
-		_aligned-free(parametric);
+		_aligned_free(parametric);
 		parametric = NULL;
 	}
 
