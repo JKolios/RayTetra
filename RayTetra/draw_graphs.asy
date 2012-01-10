@@ -1,7 +1,5 @@
 import graph;
 import unicode;
-import babel;
-babel("greek");
 
 	//Actual graph data	
 	real cpu_segura0_times[];
