@@ -44,9 +44,9 @@ CURRENT_PERCENTAGE=0
 let  "STEP = $NONINTERSECTING/(100/$GRANULARITY)"
 let  "LIMIT = 100/$GRANULARITY"
 
-rm -f  bench_output.csv
+rm -f  bench_output_$1_$2_$3_$HOSTNAME.csv > /dev/null
 echo $NONINTERSECTING,$REPETITIONS,$GRANULARITY >> bench_output_$1_$2_$3_$HOSTNAME.csv
-echo  \#Intersecting_Pairs,Haines,Moller1,Moller2,Moller3,Segura0,Segura1,Segura2,STP0,STP1,STP2,GPU_Segura0_Write,GPU_Segura0,GPU_Segura0_Read,GPU_STP0_Write,GPU_STP0,GPU_STP0_Read,GPU_STP1_Write,GPU_STP1,GPU_STP1_Read,GPU_STP2_Write,GPU_STP2,GPU_STP2_Read>> bench_output.csv
+echo  \#Intersecting_Pairs,Haines,Moller1,Moller2,Moller3,Segura0,Segura1,Segura2,STP0,STP1,STP2,GPU_Segura0_Write,GPU_Segura0,GPU_Segura0_Read,GPU_STP0_Write,GPU_STP0,GPU_STP0_Read,GPU_STP1_Write,GPU_STP1,GPU_STP1_Read,GPU_STP2_Write,GPU_STP2,GPU_STP2_Read >> bench_output_$1_$2_$3_$HOSTNAME.csv
 
 for ((a=0; a <= LIMIT ; a++)) 
 do
@@ -66,7 +66,9 @@ done
 echo "Creating graph."
 echo;
 
-echo "bench_output_$1_$2_$3_$HOSTNAME" |asy draw_graphs.asy
+./plot_time_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
+#./plot_bar_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
+
 echo; 
 
 exit 0

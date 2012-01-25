@@ -24,4 +24,5 @@ cleanbak:
 	rm -f *~ ../Common/*~
 
 cleanoutput:
-	rm -f *.txt *.elf *.csv input* *.differences *.eps
+	rm -f *.txt *.elf *.csv input* *.differences *.png
+
