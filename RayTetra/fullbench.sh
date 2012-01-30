@@ -67,6 +67,7 @@ echo "Creating graph."
 echo;
 
 ./plot_time_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
+./plot_total_time_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
 #./plot_bar_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
 
 echo; 

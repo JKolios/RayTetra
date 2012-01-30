@@ -3,7 +3,7 @@ gnuplot << EOF
 
 #Output settings
 set terminal pngcairo size 1000,600 enhanced font 'Verdana,10'
-set output '$1.png'
+set output '$1_total.png'
 
 # Line width of the axes
 set border linewidth 1.5
@@ -20,7 +20,7 @@ set style line 8 linecolor rgb '#dd181f' linetype 4 linewidth 2
 
 # Labels and legend
 set key outside right bottom
-set title "Χρόνος Επεξεργασίας" 
+set title "Συνολικός Χρόνος Εκτέλεσης" 
 set xlabel "Ποσοτό τεμνόμενων ζευγών %"
 set ylabel "Χρόνος (ms)"
 
@@ -34,9 +34,9 @@ plot "$1" using 1:6 title "Plücker 0 CPU" with linespoints linestyle 1,\
 "$1" using 1:9 title "STP 0 CPU" with linespoints linestyle 2,\
 "$1" using 1:10 title "STP 1 CPU" with linespoints linestyle 3,\
 "$1" using 1:11 title "STP 2 CPU" with linespoints linestyle 4,\
-"$1" using 1:13 title "Plücker 0 GPU" with linespoints linestyle 5,\
-"$1" using 1:16 title "STP 0 GPU" with linespoints linestyle 6,\
-"$1" using 1:19 title "STP 1 GPU" with linespoints linestyle 7,\
-"$1" using 1:22 title "STP 2 GPU" with linespoints linestyle 8
+"$1" using 1:(\$12+\$13+\$14) title "Plücker 0 GPU" with linespoints linestyle 5,\
+"$1" using 1:(\$15+\$16+\$17) title "STP 0 GPU" with linespoints linestyle 6,\
+"$1" using 1:(\$18+\$19+\$20) title "STP 1 GPU" with linespoints linestyle 7,\
+"$1" using 1:(\$21+\$22+\$23) title "STP 2 GPU" with linespoints linestyle 8
 
 EOF
