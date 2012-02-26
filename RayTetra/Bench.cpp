@@ -305,14 +305,14 @@ int main(int argc, char* argv[])
 	timerGPUSegura0Read.Stop();
     }
   
-    resultsFile << timerGPUSegura0Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSegura0Write.TotalElapsedTime() << std::endl;    
+    resultsFile << timerGPUSegura0Write.MeanElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSegura0Write.MeanElapsedTime() << std::endl;    
     
     resultsFile << timerGPUSegura0Exec.TotalElapsedTime()<< ',';
     std::cout << "Execution: " << timerGPUSegura0Exec.TotalElapsedTime() << std::endl;
 
-    resultsFile << timerGPUSegura0Read.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Read: " << timerGPUSegura0Read.TotalElapsedTime() << std::endl;
+    resultsFile << timerGPUSegura0Read.MeanElapsedTime()<< ',';
+    std::cout << "Buffer Read: " << timerGPUSegura0Read.MeanElapsedTime() << std::endl;
    
     cleanupCL();
     cleanupHost();
@@ -367,14 +367,14 @@ int main(int argc, char* argv[])
 	timerGPUSTP0Read.Stop();
     }
     
-    resultsFile << timerGPUSTP0Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSTP0Write.TotalElapsedTime() << std::endl;
+    resultsFile << timerGPUSTP0Write.MeanElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSTP0Write.MeanElapsedTime() << std::endl;
       
     resultsFile << timerGPUSTP0Exec.TotalElapsedTime()<< ',';
     std::cout << "Execution: " << timerGPUSTP0Exec.TotalElapsedTime() << std::endl;
        
-    resultsFile << timerGPUSTP0Read.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Read: " << timerGPUSTP0Read.TotalElapsedTime() << std::endl;
+    resultsFile << timerGPUSTP0Read.MeanElapsedTime()<< ',';
+    std::cout << "Buffer Read: " << timerGPUSTP0Read.MeanElapsedTime() << std::endl;
        
     cleanupCL();
     cleanupHost();
@@ -429,14 +429,14 @@ int main(int argc, char* argv[])
 	timerGPUSTP1Read.Stop();
     }
     
-    resultsFile << timerGPUSTP1Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSTP1Write.TotalElapsedTime() << std::endl;
+    resultsFile << timerGPUSTP1Write.MeanElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSTP1Write.MeanElapsedTime() << std::endl;
       
     resultsFile << timerGPUSTP1Exec.TotalElapsedTime()<< ',';
     std::cout << "Execution: " << timerGPUSTP1Exec.TotalElapsedTime() << std::endl;
        
-    resultsFile << timerGPUSTP1Read.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Read: " << timerGPUSTP1Read.TotalElapsedTime() << std::endl;
+    resultsFile << timerGPUSTP1Read.MeanElapsedTime()<< ',';
+    std::cout << "Buffer Read: " << timerGPUSTP1Read.MeanElapsedTime() << std::endl;
         
     cleanupCL();
     cleanupHost();
@@ -491,14 +491,14 @@ int main(int argc, char* argv[])
 	timerGPUSTP2Read.Stop();
     }
     
-    resultsFile << timerGPUSTP2Write.TotalElapsedTime()<< ',';
-    std::cout << "Buffer Write: " << timerGPUSTP2Write.TotalElapsedTime() << std::endl;
+    resultsFile << timerGPUSTP2Write.MeanElapsedTime()<< ',';
+    std::cout << "Buffer Write: " << timerGPUSTP2Write.MeanElapsedTime() << std::endl;
       
     resultsFile << timerGPUSTP2Exec.TotalElapsedTime()<< ',';
     std::cout << "Execution: " << timerGPUSTP2Exec.TotalElapsedTime() << std::endl;
           
-    resultsFile << timerGPUSTP2Read.TotalElapsedTime();
-    std::cout << "Buffer Read: " << timerGPUSTP2Read.TotalElapsedTime() << std::endl;
+    resultsFile << timerGPUSTP2Read.MeanElapsedTime();
+    std::cout << "Buffer Read: " << timerGPUSTP2Read.MeanElapsedTime() << std::endl;
            
     cleanupCL();
     cleanupHost();  
