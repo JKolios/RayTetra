@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
 	  
 	timerGPUSegura0Write.Start();
 	writeBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSegura0Write.Stop();
+	timerGPUSegura0Write.Pause();
     
 	timerGPUSegura0Exec.Start();
 	runCLKernels(WORK_ITEM_LIMIT);       
@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
     
 	timerGPUSegura0Read.Start();
 	readBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSegura0Read.Stop();
+	timerGPUSegura0Read.Pause();
 	
 	remainingWidth -= WORK_ITEM_LIMIT;
 	offset += WORK_ITEM_LIMIT;
@@ -339,7 +339,7 @@ int main(int argc, char* argv[])
 	  
 	timerGPUSTP0Write.Start();
 	writeBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSTP0Write.Stop();
+	timerGPUSTP0Write.Pause();
     
 	timerGPUSTP0Exec.Start();
 	runCLKernels(WORK_ITEM_LIMIT);       
@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
     
 	timerGPUSTP0Read.Start();
 	readBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSTP0Read.Stop();
+	timerGPUSTP0Read.Pause();
 	
 	remainingWidth -= WORK_ITEM_LIMIT;
 	offset += WORK_ITEM_LIMIT;
@@ -401,7 +401,7 @@ int main(int argc, char* argv[])
 	  
 	timerGPUSTP1Write.Start();
 	writeBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSTP1Write.Stop();
+	timerGPUSTP1Write.Pause();
     
 	timerGPUSTP1Exec.Start();
 	runCLKernels(WORK_ITEM_LIMIT);       
@@ -409,7 +409,7 @@ int main(int argc, char* argv[])
     
 	timerGPUSTP1Read.Start();
 	readBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSTP1Read.Stop();
+	timerGPUSTP1Read.Pause();
 	
 	remainingWidth -= WORK_ITEM_LIMIT;
 	offset += WORK_ITEM_LIMIT;
@@ -463,7 +463,7 @@ int main(int argc, char* argv[])
 	  
 	timerGPUSTP2Write.Start();
 	writeBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSTP2Write.Stop();
+	timerGPUSTP2Write.Pause();
     
 	timerGPUSTP2Exec.Start();
 	runCLKernels(WORK_ITEM_LIMIT);       
@@ -471,7 +471,7 @@ int main(int argc, char* argv[])
     
 	timerGPUSTP2Read.Start();
 	readBuffers(offset,WORK_ITEM_LIMIT);       
-	timerGPUSTP2Read.Stop();
+	timerGPUSTP2Read.Pause();
 	
 	remainingWidth -= WORK_ITEM_LIMIT;
 	offset += WORK_ITEM_LIMIT;

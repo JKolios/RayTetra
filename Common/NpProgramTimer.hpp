@@ -15,7 +15,8 @@ public:
 
     void  Start();
     void  Stop();
-    
+    void Pause();
+
     std::string Name() const;
     
     clock_t ElapsedTime() const;

@@ -39,6 +39,16 @@ void NpProgramTimer::Stop()
     }
 }
 
+void NpProgramTimer::Pause()
+{
+    mStop = clock();
+
+    if (mStop == clock_t(-1))
+        std::cerr << *this << " Error: Could not stop timer." << std::endl;
+    else  {
+        mTotalTime += ElapsedTime();
+    }
+}
 
 std::string NpProgramTimer::Name() const
 {
