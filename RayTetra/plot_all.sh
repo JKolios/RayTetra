@@ -3,5 +3,7 @@
 
 for file in *.csv
 do
-./plot_time_graph.sh $file
+ext=csv
+./plot_time_graph.sh ${file%.$ext}
+./plot_total_time_graph.sh ${file%.$ext}
 done
