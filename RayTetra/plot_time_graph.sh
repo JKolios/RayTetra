@@ -6,7 +6,7 @@ set terminal epslatex
 set output '$1.eps' 
 
 # Scale and aspect ratio
-set size 1.3,1
+set size 1.4,1
 
 # Line width of the axes
 set border linewidth 1.5

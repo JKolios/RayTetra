@@ -58,17 +58,18 @@ do
   ./RandomRayTetra input$CURRENT_PERCENTAGE -i $INTERSECTING -n $NONINTERSECTING
   
   ./Bench input$CURRENT_PERCENTAGE bench_output_$1_$2_$3_$HOSTNAME.csv $REPETITIONS $DEVICE_NUMBER
+  rm input$CURRENT_PERCENTAGE  > /dev/null
   let "INTERSECTING+=$STEP"
   let "NONINTERSECTING+=-$STEP"
-  let  "CURRENT_PERCENTAGE += $GRANULARITY"  
+  let  "CURRENT_PERCENTAGE += $GRANULARITY"
+  
 done
 
 echo "Creating graph."
 echo;
 
-./plot_time_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
-./plot_total_time_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
-#./plot_bar_graph.sh bench_output_$1_$2_$3_$HOSTNAME.csv
+./plot_time_graph.sh bench_output_$1_$2_$3_$HOSTNAME
+./plot_total_time_graph.sh bench_output_$1_$2_$3_$HOSTNAME
 
 echo; 
 
